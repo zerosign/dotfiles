@@ -1,0 +1,1 @@
+/home/zerosign/Repositories/dotfiles/emacs/.emacs.d

@@ -1,0 +1,16 @@
+[core]
+	editor = vim
+[commit]
+	template = /home/zerosign/.gitmessage
+; [credential]
+	; helper = cache --timeout=5000
+[github]
+	user = zerosign
+	email = r1nlx0@gmail.com
+[log]
+	decorate = full
+[push]
+	default = simple
+[user]
+	email = r1nlx0@gmail.com
+	name = zerosign

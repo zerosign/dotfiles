@@ -1,0 +1,9 @@
+# {TAGNAME} = [FEATURE, BUGFIX, TASK, CLEANUP, API]
+[{TAGNAME}] {short-description}
+
+{long-description}
+
+# optional !
+
+!Resolves:{ticket-number}
+
