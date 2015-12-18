@@ -3,7 +3,6 @@
 (require 'company)
 ;; (require 'auto-complete)
 (require 'haskell-mode)
-(require 'ghc)
 
 (add-to-list 'company-backends 'company-ghc)
 (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))

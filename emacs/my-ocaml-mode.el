@@ -11,4 +11,5 @@
 ;; Enable auto-complete
 (setq merlin-use-auto-complete-mode 'easy)
 ;; Use opam switch to lookup ocamlmerlin binary
+(setq tuareg-indent-align-with-first-arg nil)
 (setq merlin-command 'opam)
