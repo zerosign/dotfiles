@@ -26,6 +26,7 @@
 
 (global-set-key (kbd "C-x C-[") 'shrink-window-horizontally)
 (global-set-key (kbd "C-x C-]") 'enlarge-window-horizontally)
+(scroll-bar-mode -1)
 
 ;; (gist-view-gist t)
 ;; (tab-width 3)
@@ -50,7 +51,7 @@
 ;; (powerline-default-theme)
 ;; (load-theme 'flatland-black t)
 ;; (load-theme 'fogus t)
-(load-theme 'spacegray t)
+(load-theme 'material t)
 
 ;; Configure the faces
 ;(set-face-attribute 'default nil :height 90)
@@ -81,4 +82,5 @@
 
 (setq-default tab-width 3)
 
+(ido-mode)
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
