@@ -35,12 +35,13 @@ set smarttab
 
 
 " Vundle init
-set nocompatible 
+set nocompatible
 filetype off
 
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 
+Plugin 'editorconfig/editorconfig-vim'
 Plugin 'gmarik/Vundle.vim'
 
 Plugin 'Rip-Rip/clang_complete'
