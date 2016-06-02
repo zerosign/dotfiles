@@ -51,11 +51,9 @@
 ;; (powerline-default-theme)
 ;; (load-theme 'flatland-black t)
 ;; (load-theme 'fogus t)
-(load-theme 'material t)
+(load-theme 'hydandata-light t)
 
 ;; Configure the faces
-;(set-face-attribute 'default nil :height 90)
-
 
 ;; Configure temporary files
 ;; (setq backup-by-copying t

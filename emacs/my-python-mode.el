@@ -19,9 +19,9 @@
 (add-to-list 'company-backends '(company-jedi company-files))
 ;; (py-autopep8-enable-on-save)
 
-(sphinx-doc)
-(sphinx-doc-mode t)
+;; (sphinx-doc)
+;; (sphinx-doc-mode t)
 
-(require 'yasnippet)
-(yas/initialize)
-(yas/load-directories "~/Repositories/dotfiles/emacs/yasnippet/python")
+; (require 'yasnippet)
+; (yas/initialize)
+; (yas/load-directories "~/Repositories/dotfiles/emacs/yasnippet/python")
