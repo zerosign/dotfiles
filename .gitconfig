@@ -1,5 +1,5 @@
 [core]
-	editor = vim
+	editor = emacs
 [commit]
 	template = /home/zerosign/.gitmessage
 ; [credential]
