@@ -65,6 +65,17 @@
 ;; org-bullets
 (use-package org-bullets :ensure t :config (add-hook 'org-mode-hook #'org-bullets-mode))
 
+(use-package epresent :ensure t :defer t)
+
+;; ox
+(use-package ox-asciidoc :ensure t :defer t)
+(use-package ox-epub :ensure t :defer t)
+(use-package ox-jira :ensure t :defer t)
+(use-package ox-hugo :ensure t :defer t)
+(use-package ox-pandoc :ensure t :defer t)
+(use-package ox-rst :ensure t :defer t)
+(use-package pandoc-mode :ensure t :defer t)
+
 ;; code search
 (use-package ripgrep :ensure t :defer t)
 (use-package ag      :ensure t :defer t)
@@ -88,6 +99,7 @@
 
 ;; editorconfig
 (use-package editorconfig :ensure t :config (editorconfig-mode t))
+(use-package editorconfig-charset-extras :ensure t :defer t)
 
 ;; company
 (use-package company :diminish company-mode :commands company-mode
@@ -97,6 +109,13 @@
                 company-idle-delay 0
                 company-minimum-prefix-length 4)
   :init (add-hook 'after-init-hook 'global-company-mode))
+
+;; java
+(use-package jdecomp :ensure t :defer t
+  :config (setq jdecomp-decompiler-type 'fernflower
+                jdecomp-decompiler-paths '((cfr . "/opt/jde/cfr.jar")
+                                           (fernflower . "/opt/jde/fernflower.jar")
+                                           (procyon . "/opt/jde/procyon.jar"))))
 
 ;; cmake mode
 (use-package cmake-ide :ensure t)
@@ -110,6 +129,12 @@
 (use-package typescript-mode :ensure t :init (add-hook 'typescript-mode-hook #'tide-init))
 
 (use-package nvm :ensure t :defer t)
+
+(use-package markdown-mode :ensure t :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
 
 (use-package js2-mode
   :ensure t
@@ -186,8 +211,8 @@
 (use-package ensime :ensure t :pin melpa
   :config
   (setq
-   ensime-sbt-command "/opt/sbt/bin/sbt"
-   sbt:program-name   "/opt/sbt/bin/sbt"
+   ensime-sbt-command "/usr/bin/sbt"
+   sbt:program-name   "/usr/bin/sbt"
    ensime-search-interface 'ivy))
 
 (use-package sbt-mode :ensure t :pin melpa)
@@ -196,6 +221,26 @@
 (use-package scala-mode :ensure t :init
   (add-hook 'scala-mode-hook '(lambda () ((company-mode)
                                           (ensime-mode)))))
+
+(use-package restclient :ensure t :defer t :pin melpa)
+(use-package restclient-helm :ensure t :defer t :pin melpa)
+
+(use-package rg :ensure t :defer t :pin melpa)
+
+(use-package ssh-agency :ensure t :defer t :pin melpa)
+(use-package ssh-config-mode :ensure t :defer t :pin melpa)
+
+(use-package sudo-edit :ensure t :defer t :pin melpa)
+(use-package systemd :ensure t :defer t   :pin melpa)
+
+(use-package term-manager :ensure t :defer t :pin melpa)
+(use-package term-projectile :ensure t :defer t :pin melpa)
+
+(use-package vlf :ensure t :defer t :pin melpa)
+
+(use-package waf-mode :ensure t :defer t :pin melpa)
+(use-package yard-mode :ensure t :defer t :pin melpa)
+
 
 ;; (use-package lsp-flycheck :ensure t)
 
@@ -282,6 +327,7 @@
   ;;  :test        "make test")
   :config (projectile-mode))
 
+(use-package projectile-ripgrep :ensure t :defer t)
 
 (use-package counsel-projectile :ensure t :init
   (defun counsel-projectile-ag ()
@@ -390,7 +436,7 @@
     ("649ca960922e2176a451db44624bc4dbcd282bc1660d2621793145232f688836" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "8e23afd1939fb702db93df19271f48d44b22db8683fa9d1dab87a1f84a6484dc" "8db4b03b9ae654d4a57804286eb3e332725c84d7cdab38463cb6b97d5762ad26" "d606ac41cdd7054841941455c0151c54f8bff7e4e050255dbd4ae4d60ab640c1" "3b5ce826b9c9f455b7c4c8bff22c020779383a12f2f57bf2eb25139244bb7290" "ddc7c847e2327389ac0b5a155ff9358a84b7292978c0d2a63f561918c5738d6f" default)))
  '(package-selected-packages
    (quote
-    (cmake-project cmake-font-lock cmake-ide apropospriate-theme flatui-themes docker-compose-mode dockerfile-mode yarn-mode vala-mode ag ripgrep yaml-mode editorconfig use-package))))
+    (markdown-mode protobuf-mode epresent editorconfig-charset-extras cmake-project cmake-font-lock cmake-ide apropospriate-theme flatui-themes docker-compose-mode dockerfile-mode yarn-mode vala-mode ag ripgrep yaml-mode editorconfig use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
