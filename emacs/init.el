@@ -2,6 +2,15 @@
 ;;; Commentary: this is zerosign init.el
 ;;; Code:
 
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
+(add-to-list 'default-frame-alist '(font . "Source Code Pro-9"))
+(set-face-attribute 'default t :font "Source Code Pro-9")
+(set-face-attribute 'default nil :font "Source Code Pro-9")
+(set-frame-font "Source Code Pro-9" nil t)
+
 (require 'package)
 
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -96,6 +105,24 @@
 
 ;; end envs setup
 
+;; add supports for why3
+;;(add-to-list 'load-path "~/Repositories/ocaml/why3/share/emacs/")
+;; (load "why3")
+
+(add-to-list 'load-path "~/Repositories/emacs/tla-mode")
+(require 'tla-mode)
+;; (use-package tla-mode :mode "\\.tla$")
+
+
+(add-to-list 'load-path "~/Repositories/ocaml/dune/editor-integration/emacs")
+(require 'dune)
+
+(use-package company :demand t :pin melpa
+  :init (global-company-mode))
+
+(use-package company-lsp :demand t :pin melpa)
+(use-package lsp-treemacs :demand t :pin melpa)
+
 ;; begin projectile & ivy setup
 ;;
 (use-package ivy :demand t :pin melpa :diminish ivy-mode
@@ -160,8 +187,11 @@
 
 (use-package gruvbox-theme :pin melpa)
 (use-package flatui-theme :pin melpa)
+(use-package brutalist-theme :pin melpa)
 
-(load-theme 'gruvbox-dark-medium t)
+;; (load-theme 'brutalist-dark t)
+(load-theme 'gruvbox-light-medium t)
+;; (load-theme 'leuven t)
 
 ;; multiple major modes in emacs
 (use-package polymode :pin melpa)
@@ -169,12 +199,18 @@
 (use-package poly-rst :pin melpa :mode "\\.rst$")
 (use-package poly-slim :pin melpa :mode "\\.slim$")
 
+(use-package markdown-mode :pin melpa
+  :init
+  (setq markdown-command "multimarkdown"))
+
 (use-package mermaid-mode :pin melpa)
 
 (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
 
 ;; magit
 (use-package magit :pin melpa :commands magit-status magit-blame)
+(use-package magit-todos :pin melpa)
+(use-package magit-lfs :pin melpa)
 (use-package forge :pin melpa :after magit)
 
 ;; tramp
@@ -245,18 +281,42 @@
 ;; rfc mode supports
 (use-package rfc-mode :pin melpa)
 
+;; R mode supports
+(use-package ess :pin melpa)
+
 ;; rust supports
-(use-package rust-mode :pin melpa :mode "\\.rs$")
+(use-package rust-mode :pin melpa :mode "\\.rs$"
+  :config (setq rust-format-on-save t))
+
 (use-package rust-playground :pin melpa )
+(use-package cargo :pin melpa)
+
+;; jsonnet
+(use-package jsonnet-mode :pin melpa)
 
 ;; go supports
-(use-package go-mode :pin melpa :mode "\\.go$")
+(use-package go-mode :pin melpa :mode "\\.go$"
+  :hook (before-save . gofmt-before-save))
 
 ;; ocaml supports
 (use-package tuareg :pin melpa)
 
+;; elixir supports
+(use-package elixir-mode :pin melpa)
+;; (use-package elixir-mix :pin melpa)
+(use-package flycheck-elixir :pin melpa)
+
 ;; scala supports
 (use-package scala-mode :pin melpa :mode "\\.s\\(c\\|cala\\|bt\\)$")
+
+;; elixir supports
+;; (use-package lsp-elixir :pin melpa :mode "\\.exs$")
+
+(use-package pug-mode :pin melpa)
+
+(use-package pkgbuild-mode :pin melpa)
+
+(global-auto-revert-mode t)
 
 ;; (use-package auto-complete :pin melpa
 ;;   :config
@@ -277,18 +337,3 @@
 (use-package company-lsp :pin melpa :commands company-lsp)
 (use-package lsp-treemacs :pin melpa :commands lsp-treemacs-errors-list)
 (use-package dap-mode :pin melpa)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (vimrc-mode scratch rfc-mode flatui-theme kaolin-theme gruvbox-theme mermaid-mode tuareg poly-slim poly-rst bnf-mode docker-compose-mode dockerfile-mode auto-complete yasnippet scala-mode go-mode rust-playground rust-mode dap-mode rg lsp-treemacs company-lsp lsp-ui lsp-mode nvm rvm persistent-scratch gitignore-templates gitignore-mode systemd sudo-edit ssh-config-mode ssh-agency restclient-helm restclient flycheck jdecomp editorconfig-charset-extras editorconfig phabricator elscreen forge magit poly-markdown polymode counsel-projectile projectile-ripgrep ag ripgrep counsel projectile flx smex ivy use-package))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
