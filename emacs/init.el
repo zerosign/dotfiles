@@ -6,16 +6,19 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(add-to-list 'default-frame-alist '(font . "Source Code Pro-9"))
-(set-face-attribute 'default t :font "Source Code Pro-9")
-(set-face-attribute 'default nil :font "Source Code Pro-9")
-(set-frame-font "Source Code Pro-9" nil t)
+;; (add-to-list 'default-frame-alist '(font . "Source Code Pro-10"))
+;; (set-face-attribute 'default t :font "Source Code Pro-10")
+;; (set-face-attribute 'default nil :font "Source Code Pro-10")
+;; (set-frame-font "Source Code Pro-10" nil t)
+
+(add-to-list 'default-frame-alist '(font . "Fira Code-9:Regular"))
+(set-face-attribute 'default t :font "Fira Code-9:Regular")
+(set-face-attribute 'default nil :font "Fira Code-9:Regular")
+(set-frame-font "Fira Code-9:Regular" nil t)
 
 (require 'package)
 
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			 ("marmalade" . "https://marmalade-repo.org/packages/")
-			 ("melpa" . "https://melpa.org/packages/")))
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
 
@@ -52,7 +55,10 @@
 ;; begin envs setup
 
 ;; nvm env variable setups
+(defconst twitter-dir (expand-file-name "twitter" (expand-file-name ".config" (concat (getenv "HOME")))))
+
 (defconst nvm-dir (concat (getenv "HOME") "/.nvm"))
+(defconst caches-dir (expand-file-name "caches" user-emacs-directory))
 
 (defun nvm-version (path)
   "Return nvm current nvm version."
@@ -76,16 +82,12 @@
       version-control t)
 
 (setq extra-paths
-      (list "/opt/racket/bin"
-            "/opt/lein/bin"
-            "/opt/scala/bin"
-            "/opt/mu/bin"
-            (concat (getenv "HOME") "/go/bin")
+      (list (concat (getenv "HOME") "/go/bin")
             (concat (getenv "HOME") "/.cargo/bin")
             (concat (getenv "HOME") "/.local/bin")
             (nvm-bin-path nvm-dir)))
 
-(add-to-list 'load-path "/opt/mu/share/emacs/site-lisp/mu4e")
+;; (add-to-list 'load-path "/opt/mu/share/emacs/site-lisp/mu4e")
 
 (defun set-external-paths (externals)
   (let ((paths (append (delete-dups (split-string (getenv "PATH") ":")) externals)))
@@ -105,23 +107,24 @@
 
 ;; end envs setup
 
+(use-package quelpa :demand t :pin melpa
+  :init (quelpa
+          '(quelpa-use-package
+            :fetcher git
+            :url "https://github.com/quelpa/quelpa-use-package"))
+         (require 'quelpa-use-package))
+
 ;; add supports for why3
 ;;(add-to-list 'load-path "~/Repositories/ocaml/why3/share/emacs/")
 ;; (load "why3")
 
-(add-to-list 'load-path "~/Repositories/emacs/tla-mode")
-(require 'tla-mode)
-;; (use-package tla-mode :mode "\\.tla$")
-
-
-(add-to-list 'load-path "~/Repositories/ocaml/dune/editor-integration/emacs")
-(require 'dune)
-
 (use-package company :demand t :pin melpa
+  :config (setq company-dabbrev-downcase nil
+                company-show-numbers t
+                company-minimum-prefix-length 2
+                company-dabbrev-other-buffers t
+                company-idle-delay 0)
   :init (global-company-mode))
-
-(use-package company-lsp :demand t :pin melpa)
-(use-package lsp-treemacs :demand t :pin melpa)
 
 ;; begin projectile & ivy setup
 ;;
@@ -174,8 +177,11 @@
 (use-package rg :pin melpa)
 (use-package ag :pin melpa)
 
-(use-package projectile-ripgrep :pin melpa
-  :bind (("C-c C-s" . projectile-ripgrep)))
+(use-package deadgrep :pin melpa
+  :bind (("C-c C-s"  . deadgrep)))
+
+;; (use-package projectile-ripgrep :pin melpa
+;;  :bind (("C-c C-s" . projectile-ripgrep)))
 
 (use-package counsel-projectile
   :pin melpa
@@ -183,15 +189,49 @@
   :config (counsel-projectile-mode) :init
   (setq projectile-switch-project-action 'projectile-dired))
 
+(use-package org-projectile
+  :pin melpa
+  :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+         ("C-c c" . org-capture))
+  :config
+  (progn
+    (org-projectile-per-project)
+    (setq org-projectile-per-project-filepath ".notes/todo.org")
+    (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+    (push (org-projectile-project-todo-entry) org-capture-templates))
+  :ensure t)
+
+(use-package org-ql :pin melpa)
+
 ;; end projectile & ivy setup
 
 (use-package gruvbox-theme :pin melpa)
 (use-package flatui-theme :pin melpa)
 (use-package brutalist-theme :pin melpa)
+(use-package zerodark-theme :pin melpa)
+(use-package cloud-theme :pin melpa)
+(use-package poet-theme :pin melpa)
+(use-package faff-theme :pin melpa)
+(use-package mood-one-theme :pin melpa)
+(use-package silkworm-theme :pin melpa)
+(use-package hydandata-light-theme :pin melpa)
+(use-package eziam-theme :pin melpa)
+(use-package parchment-theme :pin melpa)
+(use-package nord-theme :pin melpa)
+;; (use-package almost-mono-theme :pin melpa)
+(use-package darktooth-theme :pin melpa)
 
 ;; (load-theme 'brutalist-dark t)
-(load-theme 'gruvbox-light-medium t)
+;; (load-theme 'eziam-dark t)
+;; (load-theme 'cloud t)
+;; (load-theme 'mood-one t)
 ;; (load-theme 'leuven t)
+;; (load-theme 'gruvbox-dark-soft t)
+;; (load-theme 'adwaita t)
+;; (load-theme 'zerodark t)
+(load-theme 'faff)
+;; (load-theme 'silkworm t)
+(zerodark-setup-modeline-format)
 
 ;; multiple major modes in emacs
 (use-package polymode :pin melpa)
@@ -217,10 +257,10 @@
 (use-package tramp :init
   (setq tramp-default-method "ssh"))
 
-;; elscreen
-(use-package elscreen
-  :pin melpa
-  :init (elscreen-start))
+;; ;; elscreen
+;; (use-package elscreen
+;;   :pin melpa
+;;   :init (elscreen-start))
 
 (use-package phabricator :pin melpa)
 
@@ -235,6 +275,9 @@
 (use-package editorconfig
   :pin melpa
   :config (editorconfig-mode t))
+
+;; nginx mode supports
+(use-package nginx-mode :pin melpa)
 
 (use-package editorconfig-charset-extras
    :pin melpa)
@@ -284,9 +327,20 @@
 ;; R mode supports
 (use-package ess :pin melpa)
 
+;; php mode supports
+(use-package php-mode :ensure t :pin melpa)
+
 ;; rust supports
 (use-package rust-mode :pin melpa :mode "\\.rs$"
-  :config (setq rust-format-on-save t))
+  :config (setq rust-format-on-save t
+                ;; https://github.com/rust-lang/rust-mode/issues/288#issuecomment-469276567
+                rust-match-angle-brackets nil))
+
+;; futhark supports
+(use-package futhark-mode :pin melpa)
+
+;; fish-shell supports
+(use-package fish-mode :pin melpa)
 
 (use-package rust-playground :pin melpa )
 (use-package cargo :pin melpa)
@@ -305,12 +359,10 @@
 (use-package elixir-mode :pin melpa)
 ;; (use-package elixir-mix :pin melpa)
 (use-package flycheck-elixir :pin melpa)
+(use-package flycheck-rust :pin melpa)
 
 ;; scala supports
 (use-package scala-mode :pin melpa :mode "\\.s\\(c\\|cala\\|bt\\)$")
-
-;; elixir supports
-;; (use-package lsp-elixir :pin melpa :mode "\\.exs$")
 
 (use-package pug-mode :pin melpa)
 
@@ -325,15 +377,96 @@
 
 ;; init lsp
 (use-package yasnippet :pin melpa)
-(use-package lsp-mode :pin melpa
-  :hook
-  (scala-mode . lsp)
-  (rust-mode . lsp)
-  (tuareg-mode . lsp)
-  (go-mode . lsp)
-  :commands lsp)
 
-(use-package lsp-ui :pin melpa :commands lsp-ui-mode)
-(use-package company-lsp :pin melpa :commands company-lsp)
-(use-package lsp-treemacs :pin melpa :commands lsp-treemacs-errors-list)
-(use-package dap-mode :pin melpa)
+;; (use-package company-lsp :demand t :pin melpa)
+;; (use-package lsp-treemacs :demand t :pin melpa)
+;; elixir supports
+;; (use-package lsp-elixir :pin melpa :mode "\\.exs$")
+;; (use-package lsp-mode :pin melpa
+;;   :hook
+;;   (scala-mode . lsp)
+;;   (rust-mode . lsp)
+;;   (tuareg-mode . lsp)
+;;   (go-mode . lsp)
+;;   :commands lsp)
+;; (use-package lsp-ui :pin melpa :commands lsp-ui-mode)
+;; (use-package company-lsp :pin melpa :commands company-lsp)
+;; (use-package lsp-treemacs :pin melpa :commands lsp-treemacs-errors-list)
+
+;; (use-package dap-mode :pin melpa)
+
+;; abandon lsp-mode, let's try eglot
+(use-package eglot :pin melpa)
+
+(use-package pass :pin melpa)
+(use-package password-store :pin melpa)
+(use-package password-store-otp :pin melpa)
+(use-package auth-source-pass :pin melpa
+  :init (auth-source-pass-enable))
+
+(use-package realgud :pin melpa)
+(use-package realgud-byebug :pin melpa)
+(use-package realgud-ipdb :pin melpa)
+(use-package realgud-lldb :pin melpa)
+(use-package realgud-node-debug :pin melpa)
+(use-package realgud-node-inspect :pin melpa)
+(use-package realgud-pry :pin melpa)
+(use-package gradle-mode :pin melpa)
+(use-package kotlin-mode :pin melpa)
+
+(use-package ob-ammonite :pin melpa)
+(use-package ob-rust :quelpa (ob-rust :fetcher gitlab "ajyoon/ob-rust"))
+(use-package ob-go :quelpa (ob-go :fetcher gitlab "pope/ob-go"))
+(use-package ob-restclient :pin melpa)
+
+(use-package twittering-mode
+  :pin melpa
+  :ensure t
+  :commands twit
+  :init
+  (add-hook 'twittering-edit-mode-hook (lambda () (flyspell-mode)))
+  :config
+  (setq twittering-use-master-password t
+        twittering-private-info-file (expand-file-name "secrets" twitter-dir)
+        twittering-icon-mode t
+        twittering-use-icon-storage t
+        twittering-icon-storage-file (expand-file-name "twittering-mode-icons.gz" caches-dir)
+        twittering-convert-fix-size 52
+        twittering-initial-timeline-spec-string '(":home")
+        twittering-edit-skeleton 'inherit-any
+        twittering-display-remaining t
+        twittering-timeline-header  ""
+        twittering-timeline-footer  ""
+        twittering-status-format
+        "%i  %S, %RT{%FACE[bold]{%S}} %@  %FACE[shadow]{%p%f%L%r}\n%FOLD[        ]{%T}\n"))
+
+
+(use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
+(use-package proof-general :pin melpa :ensure t)
+(use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
+
+(setq org-src-tab-acts-natively t)
+(setq org-support-shift-select 'always)
+
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
+
+;; (setq org-export-latex-listings 'minted)
+;; (add-to-list 'org-export-latex-packages-alist '("" "minted"))
+
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '(
+   (C . t)
+   (latex . t)
+   (css . t)
+   (shell . t)
+   (emacs-lisp . t)
+   (go . t)
+   (python . t)
+   (ocaml . t)
+   (rust . t)
+   (ammonite . t)))
+
+;; no provide since it's init.el
