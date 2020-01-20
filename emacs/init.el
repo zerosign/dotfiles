@@ -6,6 +6,9 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+;; TODO : evaluate emacs-tree-sitter
+;; (add-to-list 'load-path "/home/zerosign/Repositories/rust/emacs-tree-sitter")
+
 ;; (add-to-list 'default-frame-alist '(font . "Source Code Pro-10"))
 ;; (set-face-attribute 'default t :font "Source Code Pro-10")
 ;; (set-face-attribute 'default nil :font "Source Code Pro-10")
@@ -34,6 +37,7 @@
 (setq gnutls-log-level 2)
 
 ;; settings
+(setq auto-window-vscroll nil)
 (global-auto-revert-mode t)
 (menu-bar-mode -1)
 (tool-bar-mode -1)
@@ -228,8 +232,8 @@
 ;; (load-theme 'leuven t)
 ;; (load-theme 'gruvbox-dark-soft t)
 ;; (load-theme 'adwaita t)
-;; (load-theme 'zerodark t)
-(load-theme 'faff)
+(load-theme 'zerodark t)
+;; (load-theme 'faff)
 ;; (load-theme 'silkworm t)
 (zerodark-setup-modeline-format)
 
@@ -419,6 +423,10 @@
 (use-package ob-go :quelpa (ob-go :fetcher gitlab "pope/ob-go"))
 (use-package ob-restclient :pin melpa)
 
+; (use-package irfc :quelpa (irfc :fetcher url "https://www.emacswiki.org/emacs/download/irfc.el"))
+
+(quelpa '(irfc :url "https://www.emacswiki.org/emacs/download/irfc.el" :fetcher url))
+
 (use-package twittering-mode
   :pin melpa
   :ensure t
@@ -447,6 +455,14 @@
 
 (setq org-src-tab-acts-natively t)
 (setq org-support-shift-select 'always)
+
+(use-package ox-rfc :pin melpa :ensure t)
+(use-package ox-epub :pin melpa :ensure t)
+(use-package ox-gfm :pin melpa :ensure t)
+(use-package ox-rst :pin melpa :ensure t)
+
+(use-package org-index :pin melpa :ensure t)
+
 
 (add-hook 'org-shiftleft-final-hook 'windmove-left)
 (add-hook 'org-shiftdown-final-hook 'windmove-down)

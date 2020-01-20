@@ -1,4 +1,5 @@
 final object packages {
+
   lazy val versions = Map(
     "http4s" -> "0.21.0-M6",
     "cats-effect" -> "2.0.0",
@@ -26,6 +27,8 @@ final object packages {
     "hashed-timer" -> "1.0.0-RC1",
     "rocksdb" -> "6.3.6",
     "prometheus" -> "0.7.0",
+    "geny" -> "0.4.2",
+    "scalameta" -> "4.2.3",
   )
 
   @inline final def loadIvy(n: String, p: String, v: String) =
@@ -69,7 +72,6 @@ final object packages {
 
   @inline final def http4s(p: String, version: String) =
     loadIvy("org.http4s", p, version)
-
 }
 
 packages.typelevel("cats-effect", packages.versions("cats-effect"))
@@ -108,6 +110,10 @@ Seq("refined", "refined-shapeless", "refined-scodec").foreach(
 
 packages.lihaoyi("fastparse", packages.versions("fastparse"))
 packages.lihaoyi("scalatags", packages.versions("scalatags"))
+packages.lihaoyi("geny", packages.versions("geny"))
+
+packages.loadIvy("org.scalameta", "scalameta", packages.versions("scalameta"))
+packages.loadIvy("com.github.fomkin", "levsha-core", "0.9.0")
 
 Seq("skunk-core", "skunk-circe", "skunk-macros").foreach(
   packages.tpolecat(_, packages.versions("skunk"))
@@ -141,3 +147,32 @@ packages.loadJava("org.xerial", "sqlite-jdbc", packages.versions("sqlite"))
 packages.loadJava("org.rocksdb", "rocksdbjni", packages.versions("rocksdb"))
 
 @
+
+//
+// wait for them to upgrade cats-effect & http4s dependencies
+// import $ivy.`io.github.jmcardon::tsec-common:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-password:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-cipher-jca:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-cipher-bouncy:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-mac:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-signatures:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-hash-jca:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-hash-bouncy:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-libsodium:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-jwt-mac:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-jwt-sig:0.2.0-M1`
+// import $ivy.`io.github.jmcardon::tsec-http4s:0.2.0-M1
+
+// import $ivy.`com.github.pureconfig::pureconfig:0.12.1`
+// import $ivy.`com.github.pureconfig::pureconfig-enumeratum:0.12.1`
+
+// import $ivy.`io.getquill::quill-spark:3.4.10`
+// import $ivy.`io.getquill::quill-cassandra:3.4.10`
+
+// import $ivy.`io.github.pityka:nspl-core_2.12:0.0.21`
+// import $ivy.`io.github.pityka:nspl-awt_2.12:0.0.21`
+
+// see in the weekends, https://github.com/tpolecat/doobie/issues/953
+// import $ivy.`org.tpolecat::doobie-quill:0.8.4`
+
+// import $ivy.`io.github.alexarchambault::data-class:0.2.0`
