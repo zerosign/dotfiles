@@ -2,21 +2,22 @@
 ;;; Commentary: this is zerosign init.el
 ;;; Code:
 
-;; (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-;; (when (file-exists-p custom-file)
-  ;; (load custom-file))
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
 ;; TODO : evaluate emacs-tree-sitter
 ;; (add-to-list 'load-path "/home/zerosign/Repositories/rust/emacs-tree-sitter")
 
-(add-to-list 'default-frame-alist '(font . "Cascadia Mono-9:Regular"))
-(set-face-attribute 'default t :font "Cascadia Mono-9:Regular")
-(set-face-attribute 'default nil :font "Cascadia Mono-9:Regular")
-(set-frame-font "Cascadia Mono-9:Regular" nil t)
+(add-to-list 'default-frame-alist '(font . "Cascadia Code-10:Regular"))
+(set-face-attribute 'default t :font "Cascadia Code-10:Regular")
+(set-face-attribute 'default nil :font "Cascadia Code-10:Regular")
+(set-frame-font "Cascadia Code-10:Regular" nil t)
 
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("elpa"  . "https://elpa.gnu.org/packages/")
                          ("org"   . "https://orgmode.org/elpa")
                          ("ublt" . "https://elpa.ubolonton.org/packages/")))
 
@@ -31,6 +32,7 @@
 (setq use-package-always-defer t
       use-package-always-ensure t)
 
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
 (setq gnutls-log-level 2)
 
 ;; settings
@@ -54,7 +56,6 @@
 (global-linum-mode t)
 
 ;; begin envs setup
-
 (defconst repository-dir (expand-file-name "Repositories" (getenv "HOME")))
 (defconst blog-dir (expand-file-name "blog/zerosign.github.io" repository-dir))
 (defconst twitter-dir (expand-file-name "twitter" (expand-file-name ".config" (concat (getenv "HOME")))))
@@ -187,15 +188,9 @@
 
 (use-package counsel :pin melpa)
 
-;; code search
-(use-package rg :pin melpa)
-(use-package ag :pin melpa)
-
+(use-package spinner :pin elpa :ensure t)
 (use-package deadgrep :pin melpa
   :bind (("C-c C-s"  . deadgrep)))
-
-;; (use-package projectile-ripgrep :pin melpa
-;;  :bind (("C-c C-s" . projectile-ripgrep)))
 
 (use-package counsel-projectile
   :pin melpa
@@ -203,15 +198,11 @@
   :config (counsel-projectile-mode) :init
   (setq projectile-switch-project-action 'projectile-dired))
 
-;; org mode
-
-
 (use-package annotate :ensure t :pin melpa)
 (use-package browse-at-remote :ensure t :pin melpa)
 (use-package cask :pin melpa :ensure t)
 
-;; end projectile & ivy setup
-
+;;; theme packages
 (use-package gruvbox-theme :pin melpa)
 (use-package flatui-theme :pin melpa)
 (use-package brutalist-theme :pin melpa)
@@ -225,24 +216,15 @@
 ;; (use-package eziam-theme :pin melpa)
 (use-package parchment-theme :pin melpa)
 (use-package nord-theme :pin melpa)
+(use-package github-theme :pin melpa)
+(use-package github-modern-theme :pin melpa)
 ;; (use-package almost-mono-theme :pin melpa)
 (use-package darktooth-theme :pin melpa)
 
-;; (load-theme 'brutalist-dark t)
-;; (load-theme 'eziam-dark t)
-;; (load-theme 'cloud t)
-;; (load-theme 'zerodark t)
-;; (load-theme 'mood-one t)
-;; (load-theme 'leuven t)
-
-;; (load-theme 'gruvbox-dark-soft t)
-;; (load-theme 'adwaita t)
-;; (load-theme 'zerodark t)
 ;; (load-theme 'poet-dark-monochrome t)
+;; (load-theme 'nord t)
 (load-theme 'github-modern t)
-;; (load-theme 'hydandata-light t)
-;; (load-theme 'faff)
-;; (load-theme 'silkworm t)
+
 (zerodark-setup-modeline-format)
 
 ;; multiple major modes in emacs
@@ -329,6 +311,8 @@
 (use-package rvm :pin melpa)
 (use-package nvm :pin melpa)
 
+(use-package json-mode :pin melpa)
+
 ;; language supports
 
 ;; docker supports
@@ -344,11 +328,20 @@
 ;; php mode supports
 (use-package php-mode :ensure t :pin melpa)
 
+;; fsharp mode supports
+(use-package fsharp-mode :ensure t :pin melpa
+  :hook (fsharp . (lambda () (require 'eglot-fsharp))))
+
 ;; rust supports
 (use-package rust-mode :pin melpa :mode "\\.rs$"
   :config (setq rust-format-on-save t
                 ;; https://github.com/rust-lang/rust-mode/issues/288#issuecomment-469276567
                 rust-match-angle-brackets nil))
+
+(use-package zig-mode :pin melpa)
+(use-package direnv :pin melpa)
+(use-package jq-mode :pin melpa)
+(use-package pest-mode :pin melpa)
 
 ;; futhark supports
 (use-package futhark-mode :pin melpa)
@@ -442,21 +435,32 @@
 (use-package plantuml-mode :ensure t :pin melpa)
 (use-package flycheck-plantuml :ensure t :pin melpa)
 
-(use-package org :pin org
-  :ensure org-plus-contrib
+(use-package org :pin melpa
+  :ensure t
   :mode (("\\.org$" . org-mode))
   :hook ((org-shiftleft-final . windmove-left)
          (org-shiftdown-final . windmove-down)
          (org-shiftright-final . windmove-right))
-  :init
-  (add-to-list 'org-src-lang-modes
-               '(("plantuml" . plantuml)
-                 ("scala" . ammonite)))
+  ;; :init
+  ;; (add-to-list 'org-src-lang-modes
+  ;;              '(("plantuml" . plantuml)
+  ;;                ("scala" . ammonite)
+  ;;                ("ocaml" . tuareg)))
   :config
   (setq org-src-tab-acts-natively t
         org-support-shift-select 'always
         org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar"
-        org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar"))
+        org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar")
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((clojure . t)
+     (emacs-lisp . t)
+     (ruby . t)
+     (ammonite . t)
+     (shell . t)
+     (sql . t)
+     (plantuml . t)
+     (ocaml . t))))
 
 (use-package org-projectile
   :pin melpa
@@ -500,7 +504,7 @@
   :init
   (add-to-list 'org-babel-load-languages '((prolog . t))))
 
-(use-package org-ql :pin melpa :ensure t)
+;; (use-package org-ql :pin melpa :ensure t)
 (use-package org-jira :pin melpa :ensure t)
 (use-package ox-rfc :pin melpa :ensure t)
 (use-package ox-epub :pin melpa :ensure t)
@@ -519,23 +523,26 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-(let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-                             ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-                             ((x-list-fonts "Verdana")         '(:font "Verdana"))
-                             ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-                             (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-       (base-font-color     (face-foreground 'default nil 'default))
-       (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-  (custom-theme-set-faces 'user
-                          `(org-level-8 ((t (,@headline ,@variable-tuple))))
-                          `(org-level-7 ((t (,@headline ,@variable-tuple))))
-                          `(org-level-6 ((t (,@headline ,@variable-tuple))))
-                          `(org-level-5 ((t (,@headline ,@variable-tuple))))
-                          `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
-                          `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
-                          `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
-                          `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
-                          `(org-document-title ((t (,@headline ,@variable-tuple :height 1.5 :underline nil))))))
+
+;; (add-hook 'server-after-make-frame-hook '((let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
+;;                                                                        ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
+;;                                                                        ((x-list-fonts "Verdana")         '(:font "Verdana"))
+;;                                                                        ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
+;;                                                                        (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
+;;                                                  (base-font-color     (face-foreground 'default nil 'default))
+;;                                                  (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
+;;                                             (custom-theme-set-faces 'user
+;;                                                                     `(org-level-8 ((t (,@headline ,@variable-tuple))))
+;;                                                                     `(org-level-7 ((t (,@headline ,@variable-tuple))))
+;;                                                                     `(org-level-6 ((t (,@headline ,@variable-tuple))))
+;;                                                                     `(org-level-5 ((t (,@headline ,@variable-tuple))))
+;;                                                                     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
+;;                                                                     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
+;;                                                                     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
+;;                                                                     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
+;;                                                                     `(org-document-title ((t (,@headline ,@variable-tuple :height 1.5 :underline nil))))))))
+
+(use-package doct :ensure t :commands (doct))
 
 (use-package gitlab-ci-mode :pin melpa :ensure t)
 (use-package gitlab-ci-mode-flycheck :pin melpa :ensure t)
