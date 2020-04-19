@@ -9,10 +9,15 @@
 ;; TODO : evaluate emacs-tree-sitter
 ;; (add-to-list 'load-path "/home/zerosign/Repositories/rust/emacs-tree-sitter")
 
-(add-to-list 'default-frame-alist '(font . "Cascadia Code-10:Regular"))
-(set-face-attribute 'default t :font "Cascadia Code-10:Regular")
-(set-face-attribute 'default nil :font "Cascadia Code-10:Regular")
-(set-frame-font "Cascadia Code-10:Regular" nil t)
+;; (add-to-list 'default-frame-alist '(font . "Cascadia Code-12:Regular"))
+;; (set-face-attribute 'default t :font "Cascadia Code-12:Regular")
+;; (set-face-attribute 'default nil :font "Cascadia Code-12:Regular")
+;; (set-frame-font "Cascadia Code-12:Regular" nil t)
+
+(add-to-list 'default-frame-alist '(font . "Source Code Pro-12:Regular"))
+(set-face-attribute 'default t :font "Source Code Pro-12:Regular")
+(set-face-attribute 'default nil :font "Source Code Pro-12:Regular")
+(set-frame-font "Source Code Pro-12:Regular" nil t)
 
 (require 'package)
 
@@ -88,6 +93,7 @@
             (concat (getenv "HOME") "/.cargo/bin")
             (concat (getenv "HOME") "/.opam/4.09.0+fp+flambda/bin")
             (concat (getenv "HOME") "/.local/bin")
+            (concat (getenv "HOME") "/.local/share/coursier/bin")
             (nvm-bin-path nvm-dir)))
 
 ;; (add-to-list 'load-path "/opt/mu/share/emacs/site-lisp/mu4e")
@@ -106,7 +112,6 @@
 (setenv "LC_ALL" "en_US.UTF-8")
 (prefer-coding-system 'utf-8)
 (set-language-environment "UTF-8")
-
 (setenv "GO111MODULE" "on")
 
 ;; end envs setup
@@ -217,14 +222,17 @@
 (use-package parchment-theme :pin melpa)
 (use-package nord-theme :pin melpa)
 (use-package github-theme :pin melpa)
+(use-package night-owl-theme :pin melpa)
 (use-package github-modern-theme :pin melpa)
 ;; (use-package almost-mono-theme :pin melpa)
 (use-package darktooth-theme :pin melpa)
 
 ;; (load-theme 'poet-dark-monochrome t)
 ;; (load-theme 'nord t)
-(load-theme 'github-modern t)
-
+;; (load-theme 'github-modern t)
+;; (load-theme 'misterioso t)
+;; (load-theme 'night-owl t)
+(load-theme 'hydandata-light t)
 (zerodark-setup-modeline-format)
 
 ;; multiple major modes in emacs
@@ -285,49 +293,33 @@
                                            (procyon . "/opt/jde/procyon.jar"))))
 
 (use-package flycheck :pin melpa :config (global-flycheck-mode))
-
 (use-package groovy-mode :pin melpa :ensure t)
-
-(use-package epg
-  :config (setq epg-gpgconf-program "gpg"))
-
+(use-package erlang :pin melpa :ensure t)
+(use-package epg :config (setq epg-gpgconf-program "gpg"))
 (use-package restclient :pin melpa)
 (use-package restclient-helm :pin melpa)
-
 (use-package ssh-agency :pin melpa)
 (use-package ssh-config-mode :pin melpa)
-
 (use-package sudo-edit :pin melpa)
 (use-package systemd :pin melpa)
-
 (use-package gitignore-mode :pin melpa)
 (use-package gitignore-templates :pin melpa)
-
 (use-package persistent-scratch :pin melpa
   :config (persistent-scratch-setup-default))
-
 (use-package scratch :pin melpa)
-
 (use-package rvm :pin melpa)
 (use-package nvm :pin melpa)
-
 (use-package json-mode :pin melpa)
-
 ;; language supports
-
 ;; docker supports
 (use-package dockerfile-mode :pin melpa)
 (use-package docker-compose-mode :pin melpa)
-
 ;; rfc mode supports
 (use-package rfc-mode :pin melpa)
-
 ;; R mode supports
 (use-package ess :pin melpa)
-
 ;; php mode supports
 (use-package php-mode :ensure t :pin melpa)
-
 ;; fsharp mode supports
 (use-package fsharp-mode :ensure t :pin melpa
   :hook (fsharp . (lambda () (require 'eglot-fsharp))))
@@ -342,13 +334,10 @@
 (use-package direnv :pin melpa)
 (use-package jq-mode :pin melpa)
 (use-package pest-mode :pin melpa)
-
 ;; futhark supports
 (use-package futhark-mode :pin melpa)
-
 ;; fish-shell supports
 (use-package fish-mode :pin melpa)
-
 (use-package rust-playground :pin melpa :ensure t)
 (use-package cargo :pin melpa)
 
@@ -367,7 +356,11 @@
 (use-package elixir-mode :pin melpa)
 ;; (use-package elixir-mix :pin melpa)
 (use-package flycheck-elixir :pin melpa)
-(use-package flycheck-rust :pin melpa)
+
+(use-package flycheck-rust :pin melpa
+  :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+(use-package gnuplot :pin melpa)
 
 (use-package flycheck-gradle :pin melpa
   :ensure t
@@ -402,33 +395,18 @@
   (add-hook 'ocaml-mode-hook #'tree-sitter-mode)
   (add-hook 'tuareg-mode-hook #'tree-sitter-mode))
 
-
 (use-package gif-screencast :pin melpa :ensure t)
-
 (use-package pass :pin melpa)
 (use-package password-store :pin melpa)
 (use-package password-store-otp :pin melpa)
-(use-package auth-source-pass :pin melpa
-  :init (auth-source-pass-enable))
-
-;; (use-package realgud :pin melpa)
-;; (use-package realgud-byebug :pin melpa)
-;; (use-package realgud-ipdb :pin melpa)
-;; (use-package realgud-lldb :pin melpa)
-;; (use-package realgud-node-debug :pin melpa)
-;; (use-package realgud-node-inspect :pin melpa)
-;; (use-package realgud-pry :pin melpa)
-
+(use-package auth-source-pass :pin melpa :init (auth-source-pass-enable))
 (use-package gradle-mode :pin melpa)
 (use-package kotlin-mode :pin melpa)
 
 (use-package webfeeder :quelpa (webfeeder :fetcher gitlab :repo "ambrevar/emacs-webfeeder"))
-
-
-; (use-package irfc :quelpa (irfc :fetcher url "https://www.emacswiki.org/emacs/download/irfc.el"))
-
 (quelpa '(irfc :url "https://www.emacswiki.org/emacs/download/irfc.el" :fetcher url))
 
+(use-package rmsbolt :quelpa (rmsbolt :fetcher gitlab :repo "jgkamat/rmsbolt"))
 (use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
 (use-package proof-general :pin melpa :ensure t)
 (use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
@@ -441,11 +419,6 @@
   :hook ((org-shiftleft-final . windmove-left)
          (org-shiftdown-final . windmove-down)
          (org-shiftright-final . windmove-right))
-  ;; :init
-  ;; (add-to-list 'org-src-lang-modes
-  ;;              '(("plantuml" . plantuml)
-  ;;                ("scala" . ammonite)
-  ;;                ("ocaml" . tuareg)))
   :config
   (setq org-src-tab-acts-natively t
         org-support-shift-select 'always
@@ -455,7 +428,10 @@
    'org-babel-load-languages
    '((clojure . t)
      (emacs-lisp . t)
+     (gnuplot . t)
      (ruby . t)
+     (rust . t)
+     (ditaa . t)
      (ammonite . t)
      (shell . t)
      (sql . t)
@@ -519,65 +495,15 @@
 (use-package org-tree-slide :pin melpa :ensure t)
 (use-package verb :pin melpa :ensure t)
 
+(use-package org-ref :pin melpa :ensure t)
+
+(global-set-key (kbd "C-c l") 'org-store-link)
+
 (use-package org-bullets
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-
-;; (add-hook 'server-after-make-frame-hook '((let* ((variable-tuple (cond ((x-list-fonts "Source Sans Pro") '(:font "Source Sans Pro"))
-;;                                                                        ((x-list-fonts "Lucida Grande")   '(:font "Lucida Grande"))
-;;                                                                        ((x-list-fonts "Verdana")         '(:font "Verdana"))
-;;                                                                        ((x-family-fonts "Sans Serif")    '(:family "Sans Serif"))
-;;                                                                        (nil (warn "Cannot find a Sans Serif Font.  Install Source Sans Pro."))))
-;;                                                  (base-font-color     (face-foreground 'default nil 'default))
-;;                                                  (headline           `(:inherit default :weight bold :foreground ,base-font-color)))
-;;                                             (custom-theme-set-faces 'user
-;;                                                                     `(org-level-8 ((t (,@headline ,@variable-tuple))))
-;;                                                                     `(org-level-7 ((t (,@headline ,@variable-tuple))))
-;;                                                                     `(org-level-6 ((t (,@headline ,@variable-tuple))))
-;;                                                                     `(org-level-5 ((t (,@headline ,@variable-tuple))))
-;;                                                                     `(org-level-4 ((t (,@headline ,@variable-tuple :height 1.1))))
-;;                                                                     `(org-level-3 ((t (,@headline ,@variable-tuple :height 1.25))))
-;;                                                                     `(org-level-2 ((t (,@headline ,@variable-tuple :height 1.5))))
-;;                                                                     `(org-level-1 ((t (,@headline ,@variable-tuple :height 1.75))))
-;;                                                                     `(org-document-title ((t (,@headline ,@variable-tuple :height 1.5 :underline nil))))))))
-
 (use-package doct :ensure t :commands (doct))
-
 (use-package gitlab-ci-mode :pin melpa :ensure t)
 (use-package gitlab-ci-mode-flycheck :pin melpa :ensure t)
-
 (use-package orgit :ensure t :pin melpa)
-
-;; (setq org-export-latex-listings 'minted)
-;; (add-to-list 'org-export-latex-packages-alist '("" "minted"))
-
-(defun org-blog-prepare (project-plist)
-  "With help from `https://github.com/howardabrams/dot-files'.
-  Touch `index.org' to rebuilt it.
-  Argument `PROJECT-PLIST' contains information about the current project."
-  (let* ((base-directory (plist-get project-plist :base-directory))
-         (buffer (find-file-noselect (expand-file-name "index.org" base-directory) t)))
-    (with-current-buffer buffer
-      (set-buffer-modified-p t)
-      (save-buffer 0))
-    (kill-buffer buffer)))
-
-(defun org-blog-sitemap-format-entry (entry _style project)
-  "Return string for each ENTRY in PROJECT."
-  (when (s-starts-with-p "posts/" entry)
-    (format "@@html:<span class=\"archive-item\"><span class=\"archive-date\">@@ %s @@html:</span>@@ [[file:%s][%s]] @@html:</span>@@"
-            (format-time-string "%h %d, %Y" (org-publish-find-date entry project))
-            entry
-            (org-publish-find-title entry project))))
-
-
-(defun org-blog-sitemap-function (title list)
-  "Return sitemap using TITLE and LIST returned by `org-blog-sitemap-format-entry'."
-  (concat "#+TITLE: " title "\n\n"
-          "\n#+begin_archive\n"
-          (mapconcat (lambda (li)
-                       (format "@@html:<li>@@ %s @@html:</li>@@" (car li)))
-                     (seq-filter #'car (cdr list))
-                     "\n")
-          "\n#+end_archive\n"))
