@@ -78,6 +78,7 @@
   "Return nvm current bin path"
   (concat nvm-dir "/versions/node/" (nvm-version nvm-dir) "/bin"))
 
+
 (defconst default-snapshot-dir (expand-file-name "snapshots" user-emacs-directory))
 (setq create-lockfiles nil)
 
@@ -93,6 +94,7 @@
             (concat (getenv "HOME") "/.cargo/bin")
             (concat (getenv "HOME") "/.opam/4.09.0+fp+flambda/bin")
             (concat (getenv "HOME") "/.local/bin")
+            "/opt/dotty/current/bin"
             (concat (getenv "HOME") "/.local/share/coursier/bin")
             (nvm-bin-path nvm-dir)))
 
@@ -211,7 +213,7 @@
 (use-package gruvbox-theme :pin melpa)
 (use-package flatui-theme :pin melpa)
 (use-package brutalist-theme :pin melpa)
-(use-package zerodark-theme :pin melpa)
+;; (use-package zerodark-theme :pin melpa)
 (use-package cloud-theme :pin melpa)
 (use-package poet-theme :pin melpa)
 (use-package faff-theme :pin melpa)
@@ -222,24 +224,29 @@
 (use-package parchment-theme :pin melpa)
 (use-package nord-theme :pin melpa)
 (use-package github-theme :pin melpa)
+(use-package brutal-theme :pin melpa)
 (use-package night-owl-theme :pin melpa)
 (use-package github-modern-theme :pin melpa)
 ;; (use-package almost-mono-theme :pin melpa)
 (use-package darktooth-theme :pin melpa)
-
+(use-package flucui-themes :pin melpa)
 ;; (load-theme 'poet-dark-monochrome t)
 ;; (load-theme 'nord t)
 ;; (load-theme 'github-modern t)
 ;; (load-theme 'misterioso t)
 ;; (load-theme 'night-owl t)
-(load-theme 'hydandata-light t)
-(zerodark-setup-modeline-format)
+;; (load-theme 'hydandata-light t)
+;; (load-theme 'mood-one t)
+(load-theme 'night-owl t)
+;; (load-theme 'parchment t)
+;; (zerodark-setup-modeline-format)
 
 ;; multiple major modes in emacs
-(use-package polymode :pin melpa)
-(use-package poly-markdown :pin melpa :mode "\\.md$")
-(use-package poly-rst :pin melpa :mode "\\.rst$")
-(use-package poly-slim :pin melpa :mode "\\.slim$")
+;; (use-package polymode :pin melpa)
+;; (use-package poly-markdown :pin melpa :mode "\\.md$")
+;; (use-package poly-rst :pin melpa :mode "\\.rst$")
+;; (use-package poly-slim :pin melpa :mode "\\.slim$")
+;; (use-package poly-org :pin melpa :mode "\\.org$")
 
 (use-package markdown-mode :pin melpa
   :init
@@ -266,6 +273,10 @@
 
 (use-package phabricator :pin melpa)
 
+(use-package org-brain :ensure t :pin melpa)
+
+(use-package polymode :config (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode))
+
 ;; eldoc
 (use-package eldoc
   :pin melpa
@@ -287,12 +298,44 @@
 ;; java
 (use-package jdecomp
   :pin melpa
-  :config (setq jdecomp-decompiler-type 'procyon
+  :config (setq jdecomp-decompiler-type 'fernflower
                 jdecomp-decompiler-paths '((cfr . "/opt/jde/cfr.jar")
                                            (fernflower . "/opt/jde/fernflower.jar")
                                            (procyon . "/opt/jde/procyon.jar"))))
 
+(use-package adoc-mode :pin melpa :mode "\\.adoc\\$")
+
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
+(use-package calibredb
+  :quelpa
+  (calibredb :repo "chenyanming/calibredb.el" :fetcher github)
+  :config
+  (setq sql-sqlite-program "/usr/bin/sqlite3"
+        calibredb-root-dir (expand-file-name "~/Documents/books/library/")
+        calibredb-db-dir (concat calibredb-root-dir "/metadata.db")
+        calibredb-program "/usr/bin/calibredb"))
+
 (use-package flycheck :pin melpa :config (global-flycheck-mode))
+
+(flycheck-define-checker scala
+  "A Scala syntax checker using the Scala compiler.
+See URL `http://www.scala-lang.org/'."
+  :command ("scalac" "-target:1.12" "-encoding" "UTF-8" "-deprecation" "-opt-warnings" source)
+  :error-patterns
+    ((error line-start (file-name) ":" line ": error: " (message) line-end))
+  :modes scala-mode
+  :next-checkers ((warning . scala-scalastyle)))
+
+(use-package ansible :pin melpa :ensure t)
+(use-package terraform-mode :pin melpa :ensure t)
+
 (use-package groovy-mode :pin melpa :ensure t)
 (use-package erlang :pin melpa :ensure t)
 (use-package epg :config (setq epg-gpgconf-program "gpg"))
@@ -321,8 +364,17 @@
 ;; php mode supports
 (use-package php-mode :ensure t :pin melpa)
 ;; fsharp mode supports
-(use-package fsharp-mode :ensure t :pin melpa
-  :hook (fsharp . (lambda () (require 'eglot-fsharp))))
+;; (use-package fsharp-mode :ensure t :pin melpa)
+
+;; typescript mode
+(use-package typescript-mode :pin melpa :ensure t)
+
+;; haskell mode
+(use-package haskell-mode :pin melpa :ensure t)
+(use-package lsp-haskell :pin melpa :ensure t :after haskell-mode)
+
+;; meson mode
+(use-package meson-mode :pin melpa :ensure t)
 
 ;; rust supports
 (use-package rust-mode :pin melpa :mode "\\.rs$"
@@ -383,17 +435,76 @@
 ;; (use-package dap-mode :pin melpa)
 
 ;; abandon lsp-mode, let's try eglot
-(use-package eglot :pin melpa
-  :config (add-to-list 'eglot-server-programs '((caml-mode tuareg-mode) . ("ocamllsp"))))
+;; (use-package eglot :pin melpa
+;;   :config (add-to-list 'eglot-server-programs '((caml-mode tuareg-mode) . ("ocamllsp")
+;;                                                 (rust-mode) . ("rust-analyzer"))))
+
+;; (use-package eglot :pin melpa
+;;   :config
+;;   (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
+
+;; (use-package eglot-jl :pin melpa)
+
+(use-package rustic :pin melpa
+  :config
+  (setq rustic-lsp-server 'rust-analyzer))
+
+;; (setq lsp-keymap-prefix "s-l")
+
+(use-package lsp-mode
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (python-mode . lsp-deferred)
+           (rust-mode . lsp-deffered)
+           (go-mode . lsp-deffered)
+           (ocaml-mode . lsp-deffered)
+           (scala-mode . lsp-deffered)
+           (java-mode . lsp-deffered)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration))
+    :commands (lsp lsp-deffered))
+
+;; optionally
+(use-package lsp-ui :commands lsp-ui-mode)
+;; if you are ivy user
+(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+
+;; optionally if you want to use debugger
+(use-package dap-mode)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+;; optional if you want which-key integration
+(use-package which-key :config (which-key-mode))
 
 ;; follow https://github.com/ubolonton/emacs-tree-sitter
 (use-package tree-sitter :pin ublt :ensure t
-  :config
-  (add-hook 'rust-mode-hook #'tree-sitter-mode)
-  (add-hook 'clojure-mode-hook #'tree-sitter-mode)
-  (add-hook 'java-mode-hook #'tree-sitter-mode)
-  (add-hook 'ocaml-mode-hook #'tree-sitter-mode)
-  (add-hook 'tuareg-mode-hook #'tree-sitter-mode))
+  :demand t
+  :config (progn
+            (require 'tree-sitter-query)
+            (require 'tree-sitter-hl)
+            (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+            (add-to-list 'tree-sitter-major-mode-language-alist '(go-mode . go))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(scala-mode . scala))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(rust-mode . rust))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(rustic-mode . rust))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(clojure-mode . clojure))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(ocaml-mode . ocaml))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(tuareg-mode . ocaml))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(python-mode . python))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(typescript-mode . typescript))
+            (add-to-list 'tree-sitter-major-mode-language-alist '(js-mode . javascript))
+            (add-hook 'js-mode-hook #'tree-sitter-mode)
+            (add-hook 'typescript-mode-hook #'tree-sitter-mode)
+            (add-hook 'python-mode-hook #'tree-sitter-mode)
+            (add-hook 'rust-mode-hook #'tree-sitter-mode)
+            (add-hook 'go-mode-hook #'tree-sitter-mode)
+            (add-hook 'scala-mode #'tree-sitter-mode)
+            (add-hook 'clojure-mode-hook #'tree-sitter-mode)
+            (add-hook 'java-mode-hook #'tree-sitter-mode)
+            (add-hook 'ocaml-mode-hook #'tree-sitter-mode)
+            (add-hook 'tuareg-mode-hook #'tree-sitter-mode)
+            (global-tree-sitter-mode)))
+
+(use-package tree-sitter-langs :pin ublt :ensure t :after tree-sitter)
 
 (use-package gif-screencast :pin melpa :ensure t)
 (use-package pass :pin melpa)
@@ -408,10 +519,17 @@
 
 (use-package rmsbolt :quelpa (rmsbolt :fetcher gitlab :repo "jgkamat/rmsbolt"))
 (use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
+(use-package ox-hugo :ensure t :pin melpa)
+;; (use-package ox-moderncv :quelpa (ox-moderncv :fetcher gitlab :repo "Titan-C/org-cv"))
 (use-package proof-general :pin melpa :ensure t)
 (use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
 (use-package plantuml-mode :ensure t :pin melpa)
 (use-package flycheck-plantuml :ensure t :pin melpa)
+
+(defun zerosign-confirm-babel-evaluate (lang body)
+  (member lang '("plantuml" "ditaa")))
+
+(use-package graphviz-dot-mode :ensure t :pin melpa)
 
 (use-package org :pin melpa
   :ensure t
@@ -423,15 +541,30 @@
   (setq org-src-tab-acts-natively t
         org-support-shift-select 'always
         org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar"
-        org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar")
+        org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar"
+        org-confirm-babel-evaluate 'zerosign-confirm-babel-evaluate)
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((clojure . t)
      (emacs-lisp . t)
      (gnuplot . t)
+     (java . t)
+     (clojure . t)
+     (C . t)
+     (lilypond . t)
      (ruby . t)
      (rust . t)
+     (rustic . t)
+     (python . t)
+     (dot . t)
+     (screen . t)
+     (fortran . t)
+     (prolog . t)
+     (kotlin . t)
+     (http . t)
+     (R . t)
      (ditaa . t)
+     (js . t)
      (ammonite . t)
      (shell . t)
      (sql . t)
@@ -445,6 +578,7 @@
   :config
   (progn
     (org-projectile-per-project)
+    (setq org-log-done 'note)
     (setq org-projectile-per-project-filepath ".notes/todo.org")
     (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
     (push (org-projectile-project-todo-entry) org-capture-templates))
@@ -465,10 +599,17 @@
   :init
   (add-to-list 'org-babel-load-languages '((go . t))))
 
+;; (use-package ob-julia :quelpa (ob-julia :fetcher github :repo "gjkerns/ob-julia")
+;;   :after org
+;;   :init
+;;   (add-to-list 'org-babel-load-languages '((julia . t))))
+
 (use-package ob-restclient :pin melpa
   :after org
   :init
   (add-to-list 'org-babel-load-languages '((restclient . t))))
+
+(use-package xmlgen :pin melpa)
 
 (use-package ob-mermaid :pin melpa :ensure t
   :after org
@@ -507,3 +648,12 @@
 (use-package gitlab-ci-mode :pin melpa :ensure t)
 (use-package gitlab-ci-mode-flycheck :pin melpa :ensure t)
 (use-package orgit :ensure t :pin melpa)
+
+;; (use-package ob-ipython :ensure t :pin melpa)
+(use-package ob-kotlin :ensure t :pin melpa)
+(use-package ob-http :ensure t :pin melpa)
+
+
+;; (load-file "/home/zerosign/.emacs.d/flycheck-dotty.el")
+
+;; http://cachestocaches.com/
