@@ -89,10 +89,16 @@
       kept-old-versions 2
       version-control t)
 
+;; set opam environment
+(defun opam-env ()
+  (interactive nil)
+  (dolist (var (car (read-from-string (shell-command-to-string "opam config env --sexp"))))
+    (setenv (car var) (cadr var))))
+
 (setq extra-paths
       (list (concat (getenv "HOME") "/go/bin")
             (concat (getenv "HOME") "/.cargo/bin")
-            (concat (getenv "HOME") "/.opam/4.09.0+fp+flambda/bin")
+            ;; (concat (getenv "HOME") "/.opam/4.09.0+fp+flambda/bin")
             (concat (getenv "HOME") "/.local/bin")
             "/opt/dotty/current/bin"
             (concat (getenv "HOME") "/.local/share/coursier/bin")
@@ -106,7 +112,8 @@
     (setenv "PATH"
      (seq-reduce
       '(lambda (lhs rhs) (concat lhs path-separator rhs)) paths ""))
-    (setq exec-path (append exec-path externals))))
+    (setq exec-path (append exec-path externals))
+    (opam-env)))
 
 (set-external-paths extra-paths)
 
@@ -231,13 +238,14 @@
 (use-package darktooth-theme :pin melpa)
 (use-package flucui-themes :pin melpa)
 ;; (load-theme 'poet-dark-monochrome t)
-;; (load-theme 'nord t)
+(load-theme 'flucui-dark t)
 ;; (load-theme 'github-modern t)
 ;; (load-theme 'misterioso t)
 ;; (load-theme 'night-owl t)
 ;; (load-theme 'hydandata-light t)
 ;; (load-theme 'mood-one t)
-(load-theme 'night-owl t)
+;; (load-theme 'night-owl t)
+;; (load-theme 'leuven t)
 ;; (load-theme 'parchment t)
 ;; (zerodark-setup-modeline-format)
 
@@ -273,6 +281,7 @@
 
 (use-package phabricator :pin melpa)
 
+(use-package protobuf-mode :pin melpa)
 (use-package org-brain :ensure t :pin melpa)
 
 (use-package polymode :config (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode))
@@ -371,7 +380,7 @@ See URL `http://www.scala-lang.org/'."
 
 ;; haskell mode
 (use-package haskell-mode :pin melpa :ensure t)
-(use-package lsp-haskell :pin melpa :ensure t :after haskell-mode)
+;; (use-package lsp-haskell :pin melpa :ensure t :after haskell-mode)
 
 ;; meson mode
 (use-package meson-mode :pin melpa :ensure t)
@@ -439,37 +448,40 @@ See URL `http://www.scala-lang.org/'."
 ;;   :config (add-to-list 'eglot-server-programs '((caml-mode tuareg-mode) . ("ocamllsp")
 ;;                                                 (rust-mode) . ("rust-analyzer"))))
 
-;; (use-package eglot :pin melpa
-;;   :config
-;;   (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
+(use-package eglot :pin melpa
+  :config
+  (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
 
 ;; (use-package eglot-jl :pin melpa)
 
+
+
 (use-package rustic :pin melpa
   :config
-  (setq rustic-lsp-server 'rust-analyzer))
+  (setq rustic-lsp-client 'eglot
+        rustic-lsp-server 'rust-analyzer))
 
 ;; (setq lsp-keymap-prefix "s-l")
 
-(use-package lsp-mode
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (python-mode . lsp-deferred)
-           (rust-mode . lsp-deffered)
-           (go-mode . lsp-deffered)
-           (ocaml-mode . lsp-deffered)
-           (scala-mode . lsp-deffered)
-           (java-mode . lsp-deffered)
-           ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration))
-    :commands (lsp lsp-deffered))
+;; (use-package lsp-mode
+;;     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+;;            (python-mode . lsp)
+;;            (rust-mode . lsp)
+;;            (go-mode . lsp)
+;;            (ocaml-mode . lsp)
+;;            (scala-mode . lsp)
+;;            (java-mode . lsp)
+;;            ;; if you want which-key integration
+;;            (lsp-mode . lsp-enable-which-key-integration))
+;;     :commands (lsp))
 
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
-;; if you are ivy user
-(use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
+;; ;; optionally
+;; (use-package lsp-ui :commands lsp-ui-mode)
+;; ;; if you are ivy user
+;; (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
 
-;; optionally if you want to use debugger
-(use-package dap-mode)
+;; ;; optionally if you want to use debugger
+;; (use-package dap-mode)
 ;; (use-package dap-LANGUAGE) to load the dap adapter for your language
 
 ;; optional if you want which-key integration
