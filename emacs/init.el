@@ -6,64 +6,10 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; TODO : evaluate emacs-tree-sitter
-;; (add-to-list 'load-path "/home/zerosign/Repositories/rust/emacs-tree-sitter")
-
-;; (add-to-list 'default-frame-alist '(font . "Cascadia Code-12:Regular"))
-;; (set-face-attribute 'default t :font "Cascadia Code-12:Regular")
-;; (set-face-attribute 'default nil :font "Cascadia Code-12:Regular")
-;; (set-frame-font "Cascadia Code-12:Regular" nil t)
-
-(add-to-list 'default-frame-alist '(font . "Source Code Pro-12:Regular"))
-(set-face-attribute 'default t :font "Source Code Pro-12:Regular")
-(set-face-attribute 'default nil :font "Source Code Pro-12:Regular")
-(set-frame-font "Source Code Pro-12:Regular" nil t)
-
-(require 'package)
-
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("elpa"  . "https://elpa.gnu.org/packages/")
-                         ("org"   . "https://orgmode.org/elpa")
-                         ("ublt" . "https://elpa.ubolonton.org/packages/")))
-
-(package-initialize)
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(require 'use-package)
-
-(setq use-package-always-defer t
-      use-package-always-ensure t)
-
-(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
-(setq gnutls-log-level 2)
-
-;; settings
-(setq auto-window-vscroll nil)
-(global-auto-revert-mode t)
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 3)
-(setq inhibit-startup-screen t
-      initial-scratch-message nil
-      initial-major-mode 'text-mode
-      make-backup-files nil
-      scroll-error-top-bottom t
-      use-package-always-ensure t
-      ring-bell-function 'ignore)
-
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
-(global-linum-mode t)
-
 ;; begin envs setup
 (defconst repository-dir (expand-file-name "Repositories" (getenv "HOME")))
-(defconst blog-dir (expand-file-name "blog/zerosign.github.io" repository-dir))
-(defconst twitter-dir (expand-file-name "twitter" (expand-file-name ".config" (concat (getenv "HOME")))))
+;; (defconst blog-dir (expand-file-name "blog/zerosign.github.io" repository-dir))
+;;(defconst twitter-dir (expand-file-name "twitter" (expand-file-name ".config" (concat (getenv "HOME")))))
 (defconst nvm-dir (concat (getenv "HOME") "/.nvm"))
 (defconst caches-dir (expand-file-name "caches" user-emacs-directory))
 
@@ -78,22 +24,27 @@
   "Return nvm current bin path"
   (concat nvm-dir "/versions/node/" (nvm-version nvm-dir) "/bin"))
 
-
 (defconst default-snapshot-dir (expand-file-name "snapshots" user-emacs-directory))
-(setq create-lockfiles nil)
-
-(setq backup-directory-alist `((".*" . ,temporary-file-directory))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
-      delete-old-versions t
-      kept-new-versions 6
-      kept-old-versions 2
-      version-control t)
 
 ;; set opam environment
 (defun opam-env ()
   (interactive nil)
   (dolist (var (car (read-from-string (shell-command-to-string "opam config env --sexp"))))
     (setenv (car var) (cadr var))))
+
+;; use define-inline or defsubst
+;; ('home . "go/bin") .
+;; ('home . ".cargo/bin") .
+;; ('home . ".local/bin") .
+;; ('home . ".local/share/coursier/bin") .
+;; ('home . 'nvm-path) .
+;; ('home . 'opam-path)
+;; ('aux  . "dotty/current/bin")
+
+;; ('home . (getenv "HOME")) .
+;; ('aux  . "/opt") .
+;; ('cache . '(path-of 'user-emacs-directory "caches"))
+;; ('repo . '(path-of 'home "Repositories"))
 
 (setq extra-paths
       (list (concat (getenv "HOME") "/go/bin")
@@ -106,7 +57,6 @@
 
 ;; (add-to-list 'load-path "/opt/mu/share/emacs/site-lisp/mu4e")
 
-
 (defun set-external-paths (externals)
   (let ((paths (append (delete-dups (split-string (getenv "PATH") ":")) externals)))
     (setenv "PATH"
@@ -117,47 +67,54 @@
 
 (set-external-paths extra-paths)
 
-(setenv "LANG"   "en_US.UTF-8")
-(setenv "LC_ALL" "en_US.UTF-8")
-(prefer-coding-system 'utf-8)
-(set-language-environment "UTF-8")
-(setenv "GO111MODULE" "on")
+(defun zerosign--setup-envs ()
+  (setenv "LANG"   "en_US.UTF-8")
+  (setenv "LC_ALL" "en_US.UTF-8")
+  (prefer-coding-system 'utf-8)
+  (set-language-environment "UTF-8")
+  (setenv "GO111MODULE" "on"))
 
-;; end envs setup
+(defun zerosign--setup-tls ()
+  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"
+        gnutls-log-level 0))
 
-(use-package quelpa :demand t :pin melpa
-  :init (quelpa
-          '(quelpa-use-package
-            :fetcher git
-            :url "https://github.com/quelpa/quelpa-use-package"))
-         (require 'quelpa-use-package))
+(zerosign--setup-tls)
 
-;; add supports for why3
-;;(add-to-list 'load-path "~/Repositories/ocaml/why3/share/emacs/")
-;; (load "why3")
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("elpa"  . "https://elpa.gnu.org/packages/")
+                         ;; ("org"   . "https://orgmode.org/elpa")
+                         ("ublt" . "https://elpa.ubolonton.org/packages/")))
+(package-initialize)
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
 
-(use-package company :demand t :pin melpa
-  :config (setq company-dabbrev-downcase nil
-                company-show-numbers t
-                company-minimum-prefix-length 2
-                company-dabbrev-other-buffers t
-                company-idle-delay 0)
-  :init (global-company-mode))
+(require 'use-package)
 
-;; begin projectile & ivy setup
-;;
-(use-package ivy :demand t :pin melpa :diminish ivy-mode
+(setq-default use-package-always-defer t
+	      use-package-always-ensure t)
+
+(use-package quelpa :demand t
   :init
-  (setq ivy-use-virtual-buffers t)
-  (setq ivy-initial-inputs-alist nil)
-  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
-  (setq ivy-extra-directories nil)
+  (quelpa
+   '(quelpa-use-package
+     :fetcher git
+     :url "https://github.com/quelpa/quelpa-use-package"))
+  (require 'quelpa-use-package))
+
+(use-package ivy :demand t :diminish ivy-mode
+  :init
+  (setq ivy-use-virtual-buffers t
+        ivy-initial-inputs-alist nil
+        ivy-re-builders-alist '((t . ivy--regex-fuzzy))
+        ivy-extra-directories nil)
   :config
   (define-key ivy-minibuffer-map (kbd "C-l") (kbd "DEL"))
-  (use-package smex :ensure t :pin melpa :init
-    (setq-default smex-history-length 32
-                  smex-save-file (expand-file-name "smex-items" default-snapshot-dir)))
-  (use-package flx :ensure t :pin melpa)
+  (use-package smex
+    :init (setq-default smex-history-length 32
+			smex-save-file (expand-file-name "smex-items" default-snapshot-dir)))
+  (use-package flx)
   (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
          ("<f6>"    . ivy-resume)
@@ -170,7 +127,6 @@
 
 (use-package centaur-tabs
   :ensure t
-  :pin melpa
   :demand
   :config
   (centaur-tabs-mode t)
@@ -178,9 +134,8 @@
   ("C-<prior>" . centaur-tabs-backward)
   ("C-<next>" . centaur-tabs-forward))
 
-(use-package swiper :ensure t :defer t
-  :pin melpa
-  :init (ivy-mode)
+(use-package swiper
+  ;; :init (ivy-mode)
   :config (setq ivy-use-virtual-buffers t
                 enable-recursive-minibuffers t)
   :bind (("C-s"     . swiper)
@@ -190,361 +145,241 @@
          ("C-x C-f" . counsel-find-file)
          ("C-c k"   . ounsel-rg)))
 
-(use-package projectile :diminish projectile-mode :pin melpa :init
-  (setq projectile-enable-caching t)
-  (setq projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir))
-  (setq projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir))
-  (setq projectile-completion-system 'ivy)
-  (setq projectile-switch-project-action 'projectile-dired)
+(use-package projectile :diminish projectile-mode
+  :init (setq projectile-enable-caching t
+	      projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
+	      projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
+	      projectile-completion-system 'ivy
+	      projectile-switch-project-action 'projectile-dired)
   :config (projectile-mode)
   :bind (("C-c f" . projectile-find-file)
          ("C-c p" . projectile-switch-project)))
-
-(use-package counsel :pin melpa)
-
-(use-package spinner :pin elpa :ensure t)
-(use-package deadgrep :pin melpa
+(use-package counsel)
+;; (use-package spinner :pin elpa :ensure t)
+(use-package deadgrep
   :bind (("C-c C-s"  . deadgrep)))
-
 (use-package counsel-projectile
-  :pin melpa
   :diminish counsel-projectile-mode
   :config (counsel-projectile-mode) :init
   (setq projectile-switch-project-action 'projectile-dired))
-
-(use-package annotate :ensure t :pin melpa)
-(use-package browse-at-remote :ensure t :pin melpa)
-(use-package cask :pin melpa :ensure t)
-
-;;; theme packages
-(use-package gruvbox-theme :pin melpa)
-(use-package flatui-theme :pin melpa)
-(use-package brutalist-theme :pin melpa)
-;; (use-package zerodark-theme :pin melpa)
-(use-package cloud-theme :pin melpa)
-(use-package poet-theme :pin melpa)
-(use-package faff-theme :pin melpa)
-(use-package mood-one-theme :pin melpa)
-(use-package silkworm-theme :pin melpa)
-(use-package hydandata-light-theme :pin melpa)
-;; (use-package eziam-theme :pin melpa)
-(use-package parchment-theme :pin melpa)
-(use-package nord-theme :pin melpa)
-(use-package github-theme :pin melpa)
-(use-package brutal-theme :pin melpa)
-(use-package night-owl-theme :pin melpa)
-(use-package github-modern-theme :pin melpa)
-;; (use-package almost-mono-theme :pin melpa)
-(use-package darktooth-theme :pin melpa)
-(use-package flucui-themes :pin melpa)
-;; (load-theme 'poet-dark-monochrome t)
-(load-theme 'flucui-dark t)
-;; (load-theme 'github-modern t)
-;; (load-theme 'misterioso t)
-;; (load-theme 'night-owl t)
-;; (load-theme 'hydandata-light t)
-;; (load-theme 'mood-one t)
-;; (load-theme 'night-owl t)
-;; (load-theme 'leuven t)
-;; (load-theme 'parchment t)
-;; (zerodark-setup-modeline-format)
-
-;; multiple major modes in emacs
-;; (use-package polymode :pin melpa)
-;; (use-package poly-markdown :pin melpa :mode "\\.md$")
-;; (use-package poly-rst :pin melpa :mode "\\.rst$")
-;; (use-package poly-slim :pin melpa :mode "\\.slim$")
-;; (use-package poly-org :pin melpa :mode "\\.org$")
-
-(use-package markdown-mode :pin melpa
-  :init
-  (setq markdown-command "multimarkdown"))
-
-(use-package mermaid-mode :pin melpa)
-
-(add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
-
-;; magit
-(use-package magit :pin melpa :commands magit-status magit-blame)
-(use-package magit-todos :pin melpa)
-(use-package magit-lfs :pin melpa)
-(use-package forge :pin melpa :after magit)
-
-;; tramp
+(use-package pass)
+(use-package password-store)
+(use-package password-store-otp)
+(use-package auth-source-pass
+  :init (auth-source-pass-enable))
 (use-package tramp :init
   (setq tramp-default-method "ssh"))
-
-;; ;; elscreen
-;; (use-package elscreen
-;;   :pin melpa
-;;   :init (elscreen-start))
-
-(use-package phabricator :pin melpa)
-
-(use-package protobuf-mode :pin melpa)
-(use-package org-brain :ensure t :pin melpa)
-
-(use-package polymode :config (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode))
-
+(use-package company
+  :demand t
+  :config (setq company-dabbrev-downcase nil
+                company-show-numbers t
+                company-minimum-prefix-length 2
+                company-dabbrev-other-buffers t
+                company-idle-delay 0)
+  :init (global-company-mode))
+(use-package epg :config (setq epg-gpgconf-program "gpg"))
+(use-package restclient)
+(use-package restclient-helm)
+(use-package ssh-agency)
+(use-package ssh-config-mode)
+(use-package sudo-edit)
+(use-package systemd)
+(global-auto-revert-mode t)
+(use-package yasnippet)
+(use-package verb)
 ;; eldoc
 (use-package eldoc
-  :pin melpa
   :diminish eldoc-mode :commands eldoc-mode)
+(use-package flycheck :config (global-flycheck-mode))
 
-(use-package bnf-mode :pin melpa)
+(defun zerosign--setup-layouts ()
+  (interactive)
+  (setq auto-window-vscroll nil
+		  indent-tabs-mode nil
+		  tab-width 3
+		  inhibit-startup-screen t
+		  initial-scratch-message nil
+		  initial-major-mode 'org-mode
+		  make-backup-files nil
+		  scroll-error-top-bottom t
+		  ring-bell-function 'ignore)
+  (global-linum-mode t)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (scroll-bar-mode -1))
 
-;; editorconfig
-(use-package editorconfig
-  :pin melpa
-  :config (editorconfig-mode t))
+(defun zerosign--setup-defaults ()
+  (setq backup-directory-alist `((".*" . ,temporary-file-directory))
+        auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+        delete-old-versions t
+        create-lockfiles nil
+        kept-new-versions 6
+        kept-old-versions 2
+        version-control t))
 
-;; nginx mode supports
-(use-package nginx-mode :pin melpa)
+(defun zerosign--config-font (&optional frame)
+  (with-selected-frame (or frame (selected-frame))
+    (set-face-attribute 'default t :font "Source Code Variable-10:Semibold")
+    (set-face-attribute 'default nil :font "Source Code Variable-10:Semibold")))
 
-(use-package editorconfig-charset-extras
-   :pin melpa)
+(defun zerosign--setup-hooks ()
+  (add-hook 'after-make-frame-functions #'zerosign--config-font)
+  (add-hook 'before-save-hook 'delete-trailing-whitespace))
 
-;; java
-(use-package jdecomp
-  :pin melpa
-  :config (setq jdecomp-decompiler-type 'fernflower
-                jdecomp-decompiler-paths '((cfr . "/opt/jde/cfr.jar")
-                                           (fernflower . "/opt/jde/fernflower.jar")
-                                           (procyon . "/opt/jde/procyon.jar"))))
+(zerosign--setup-hooks)
+(zerosign--setup-layouts)
+(zerosign--setup-envs)
+(zerosign--setup-defaults)
 
-(use-package adoc-mode :pin melpa :mode "\\.adoc\\$")
-
+;;(defun zerosign--docs ()
+;;  (interactive)
+(use-package adoc-mode
+  :mode "\\.adoc\\$")
 (use-package markdown-mode
-  :ensure t
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
+(use-package mermaid-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode)))
 
-(use-package calibredb
-  :quelpa
-  (calibredb :repo "chenyanming/calibredb.el" :fetcher github)
-  :config
-  (setq sql-sqlite-program "/usr/bin/sqlite3"
-        calibredb-root-dir (expand-file-name "~/Documents/books/library/")
-        calibredb-db-dir (concat calibredb-root-dir "/metadata.db")
-        calibredb-program "/usr/bin/calibredb"))
+;;(defun zerosign--themes ()
+;;  (interactive)
+(use-package gruvbox-theme)
+(use-package flatui-theme)
+(use-package brutalist-theme)
+;; (use-package zerodark-theme)
+(use-package cloud-theme)
+(use-package poet-theme)
+(use-package faff-theme)
+(use-package mood-one-theme)
+(use-package silkworm-theme)
+(use-package hydandata-light-theme)
+;; (use-package eziam-theme)
+(use-package parchment-theme)
+(use-package nord-theme )
+(use-package github-theme)
+(use-package brutal-theme)
+(use-package night-owl-theme)
+(use-package github-modern-theme)
+;; (use-package almost-mono-theme)
+(use-package darktooth-theme)
+(use-package flucui-themes)
 
-(use-package flycheck :pin melpa :config (global-flycheck-mode))
+;;(defun zerosign--setup-vc ()
+;;(interactive)
+(use-package magit :commands magit-status magit-blame)
+(use-package magit-todos )
+(use-package magit-lfs )
+(use-package forge  :after magit)
 
-(flycheck-define-checker scala
-  "A Scala syntax checker using the Scala compiler.
-See URL `http://www.scala-lang.org/'."
-  :command ("scalac" "-target:1.12" "-encoding" "UTF-8" "-deprecation" "-opt-warnings" source)
-  :error-patterns
-    ((error line-start (file-name) ":" line ": error: " (message) line-end))
-  :modes scala-mode
-  :next-checkers ((warning . scala-scalastyle)))
-
-(use-package ansible :pin melpa :ensure t)
-(use-package terraform-mode :pin melpa :ensure t)
-
-(use-package groovy-mode :pin melpa :ensure t)
-(use-package erlang :pin melpa :ensure t)
-(use-package epg :config (setq epg-gpgconf-program "gpg"))
-(use-package restclient :pin melpa)
-(use-package restclient-helm :pin melpa)
-(use-package ssh-agency :pin melpa)
-(use-package ssh-config-mode :pin melpa)
-(use-package sudo-edit :pin melpa)
-(use-package systemd :pin melpa)
-(use-package gitignore-mode :pin melpa)
-(use-package gitignore-templates :pin melpa)
-(use-package persistent-scratch :pin melpa
-  :config (persistent-scratch-setup-default))
-(use-package scratch :pin melpa)
-(use-package rvm :pin melpa)
-(use-package nvm :pin melpa)
-(use-package json-mode :pin melpa)
-;; language supports
-;; docker supports
-(use-package dockerfile-mode :pin melpa)
-(use-package docker-compose-mode :pin melpa)
-;; rfc mode supports
-(use-package rfc-mode :pin melpa)
-;; R mode supports
-(use-package ess :pin melpa)
-;; php mode supports
-(use-package php-mode :ensure t :pin melpa)
-;; fsharp mode supports
-;; (use-package fsharp-mode :ensure t :pin melpa)
-
-;; typescript mode
-(use-package typescript-mode :pin melpa :ensure t)
-
-;; haskell mode
-(use-package haskell-mode :pin melpa :ensure t)
-;; (use-package lsp-haskell :pin melpa :ensure t :after haskell-mode)
-
-;; meson mode
-(use-package meson-mode :pin melpa :ensure t)
-
+;;(defun zerosign--pl-basic ()
+;; scala supports
+(use-package scala-mode  :mode "\\.s\\(c\\|cala\\|bt\\)$")
+(use-package groovy-mode)
+(use-package erlang)
+(use-package php-mode)
+(use-package typescript-mode)
+(use-package haskell-mode)
 ;; rust supports
-(use-package rust-mode :pin melpa :mode "\\.rs$"
+(use-package rust-mode  :mode "\\.rs$"
   :config (setq rust-format-on-save t
                 ;; https://github.com/rust-lang/rust-mode/issues/288#issuecomment-469276567
                 rust-match-angle-brackets nil))
-
-(use-package zig-mode :pin melpa)
-(use-package direnv :pin melpa)
-(use-package jq-mode :pin melpa)
-(use-package pest-mode :pin melpa)
-;; futhark supports
-(use-package futhark-mode :pin melpa)
-;; fish-shell supports
-(use-package fish-mode :pin melpa)
-(use-package rust-playground :pin melpa :ensure t)
-(use-package cargo :pin melpa)
-
-;; jsonnet
-(use-package jsonnet-mode :pin melpa)
-
+(use-package zig-mode)
 ;; go supports
-(use-package go-mode :pin melpa :mode "\\.go$"
+(use-package go-mode  :mode "\\.go$"
   :hook (before-save . gofmt-before-save))
-
 ;; ocaml supports
-(use-package tuareg :pin melpa)
-(use-package dune :pin melpa)
-
+(use-package tuareg)
+(use-package dune)
 ;; elixir supports
-(use-package elixir-mode :pin melpa)
-;; (use-package elixir-mix :pin melpa)
-(use-package flycheck-elixir :pin melpa)
-
-(use-package flycheck-rust :pin melpa
-  :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
-
-(use-package gnuplot :pin melpa)
-
-(use-package flycheck-gradle :pin melpa
-  :ensure t
-  :commands (flycheck-gradle-setup)
-  :init (mapc (lambda (x)
-                (add-hook x #'flycheck-gradle-setup))
-              '(java-mode-hook kotlin-mode-hook)))
-
-;; scala supports
-(use-package scala-mode :pin melpa :mode "\\.s\\(c\\|cala\\|bt\\)$")
-
-(use-package pug-mode :pin melpa)
-
-(use-package pkgbuild-mode :pin melpa)
-
-(global-auto-revert-mode t)
-
-(use-package yasnippet :pin melpa)
-
-;; (use-package dap-mode :pin melpa)
-
-;; abandon lsp-mode, let's try eglot
-;; (use-package eglot :pin melpa
-;;   :config (add-to-list 'eglot-server-programs '((caml-mode tuareg-mode) . ("ocamllsp")
-;;                                                 (rust-mode) . ("rust-analyzer"))))
-
-(use-package eglot :pin melpa
-  :config
-  (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
-
-;; (use-package eglot-jl :pin melpa)
-
-
-
-(use-package rustic :pin melpa
-  :config
-  (setq rustic-lsp-client 'eglot
-        rustic-lsp-server 'rust-analyzer))
-
-;; (setq lsp-keymap-prefix "s-l")
-
-;; (use-package lsp-mode
-;;     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-;;            (python-mode . lsp)
-;;            (rust-mode . lsp)
-;;            (go-mode . lsp)
-;;            (ocaml-mode . lsp)
-;;            (scala-mode . lsp)
-;;            (java-mode . lsp)
-;;            ;; if you want which-key integration
-;;            (lsp-mode . lsp-enable-which-key-integration))
-;;     :commands (lsp))
-
-;; ;; optionally
-;; (use-package lsp-ui :commands lsp-ui-mode)
-;; ;; if you are ivy user
-;; (use-package lsp-ivy :commands lsp-ivy-workspace-symbol)
-
-;; ;; optionally if you want to use debugger
-;; (use-package dap-mode)
-;; (use-package dap-LANGUAGE) to load the dap adapter for your language
-
-;; optional if you want which-key integration
-(use-package which-key :config (which-key-mode))
-
-;; follow https://github.com/ubolonton/emacs-tree-sitter
-(use-package tree-sitter :pin ublt :ensure t
+(use-package elixir-mode)
+;; futhark supports
+(use-package futhark-mode)
+;; fish-shell supports
+(use-package fish-mode)
+(use-package kotlin-mode)
+(use-package tree-sitter
+  :pin ublt
+  :after tree-sitter-langs
   :demand t
+  :hook ((js-mode . tree-sitter-hl-mode)
+         (typescript-mode . tree-sitter-hl-mode)
+         (python-mode . tree-sitter-hl-mode)
+         (rust-mode . tree-sitter-hl-mode)
+         (go-mode . tree-sitter-hl-mode)
+         (scala-mode . tree-sitter-hl-mode)
+         (clojure-mode . tree-sitter-hl-mode)
+         (java-mode . tree-sitter-hl-mode)
+         (ocaml-mode . tree-sitter-hl-mode)
+         (tuareg-mode . tree-sitter-hl-mode))
   :config (progn
             (require 'tree-sitter-query)
             (require 'tree-sitter-hl)
-            (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-            (add-to-list 'tree-sitter-major-mode-language-alist '(go-mode . go))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(scala-mode . scala))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(rust-mode . rust))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(rustic-mode . rust))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(clojure-mode . clojure))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(ocaml-mode . ocaml))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(tuareg-mode . ocaml))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(python-mode . python))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(typescript-mode . typescript))
-            (add-to-list 'tree-sitter-major-mode-language-alist '(js-mode . javascript))
-            (add-hook 'js-mode-hook #'tree-sitter-mode)
-            (add-hook 'typescript-mode-hook #'tree-sitter-mode)
-            (add-hook 'python-mode-hook #'tree-sitter-mode)
-            (add-hook 'rust-mode-hook #'tree-sitter-mode)
-            (add-hook 'go-mode-hook #'tree-sitter-mode)
-            (add-hook 'scala-mode #'tree-sitter-mode)
-            (add-hook 'clojure-mode-hook #'tree-sitter-mode)
-            (add-hook 'java-mode-hook #'tree-sitter-mode)
-            (add-hook 'ocaml-mode-hook #'tree-sitter-mode)
-            (add-hook 'tuareg-mode-hook #'tree-sitter-mode)
             (global-tree-sitter-mode)))
 
-(use-package tree-sitter-langs :pin ublt :ensure t :after tree-sitter)
+(use-package tree-sitter-langs :pin ublt)
 
-(use-package gif-screencast :pin melpa :ensure t)
-(use-package pass :pin melpa)
-(use-package password-store :pin melpa)
-(use-package password-store-otp :pin melpa)
-(use-package auth-source-pass :pin melpa :init (auth-source-pass-enable))
-(use-package gradle-mode :pin melpa)
-(use-package kotlin-mode :pin melpa)
+;;(defun zerosign--flychecks ()
+;;  (interactive)
+(use-package flycheck-elixir)
+(use-package gitlab-ci-mode-flycheck)
+(use-package flycheck-plantuml)
+(use-package flycheck-rust
+  :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+(use-package flycheck-gradle
+  :commands (flycheck-gradle-setup)
+  :init (mapc (lambda (x)
+                (add-hook x #'flycheck-gradle-setup))
+	      '(java-mode-hook kotlin-mode-hook)))
+(flycheck-define-checker scala
+			 "A Scala syntax checker using the Scala compiler.
+    See URL `http://www.scala-lang.org/'."
+			 :command ("scalac" "-target:1.12" "-encoding" "UTF-8" "-deprecation" "-opt-warnings" source)
+			 :error-patterns
+			 ((error line-start (file-name) ":" line ": error: " (message) line-end))
+			 :modes scala-mode
+			 :next-checkers ((warning . scala-scalastyle)))
 
-(use-package webfeeder :quelpa (webfeeder :fetcher gitlab :repo "ambrevar/emacs-webfeeder"))
-(quelpa '(irfc :url "https://www.emacswiki.org/emacs/download/irfc.el" :fetcher url))
+;;(defun zerosign--pl-aux ()
+;;  (interactive)
+(use-package graphviz-dot-mode)
+(use-package gitlab-ci-mode)
+(use-package gradle-mode)
+(use-package meson-mode)
+(use-package jsonnet-mode )
+(use-package json-mode)
+(use-package dockerfile-mode)
+(use-package docker-compose-mode)
+(use-package rfc-mode)
+(use-package jq-mode)
+(use-package pest-mode)
+(use-package terraform-mode)
+(use-package gitignore-mode)
+(use-package protobuf-mode)
+(use-package pug-mode)
+(use-package gnuplot)
+(use-package nginx-mode)
+(use-package pkgbuild-mode)
+(use-package plantuml-mode)
+(use-package editorconfig
+  :config (editorconfig-mode t))
+(use-package bnf-mode)
+(use-package editorconfig-charset-extras)
 
-(use-package rmsbolt :quelpa (rmsbolt :fetcher gitlab :repo "jgkamat/rmsbolt"))
-(use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
-(use-package ox-hugo :ensure t :pin melpa)
-;; (use-package ox-moderncv :quelpa (ox-moderncv :fetcher gitlab :repo "Titan-C/org-cv"))
-(use-package proof-general :pin melpa :ensure t)
-(use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
-(use-package plantuml-mode :ensure t :pin melpa)
-(use-package flycheck-plantuml :ensure t :pin melpa)
+;;(defun zerosign--devops ()
+;;  (interactive)
+(use-package ansible)
 
 (defun zerosign-confirm-babel-evaluate (lang body)
   (member lang '("plantuml" "ditaa")))
 
-(use-package graphviz-dot-mode :ensure t :pin melpa)
-
-(use-package org :pin melpa
-  :ensure t
+;;(defun zerosign--setup-org ()
+;;  (interactive)
+(use-package org
   :mode (("\\.org$" . org-mode))
   :hook ((org-shiftleft-final . windmove-left)
          (org-shiftdown-final . windmove-down)
@@ -554,37 +389,10 @@ See URL `http://www.scala-lang.org/'."
         org-support-shift-select 'always
         org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar"
         org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar"
-        org-confirm-babel-evaluate 'zerosign-confirm-babel-evaluate)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((clojure . t)
-     (emacs-lisp . t)
-     (gnuplot . t)
-     (java . t)
-     (clojure . t)
-     (C . t)
-     (lilypond . t)
-     (ruby . t)
-     (rust . t)
-     (rustic . t)
-     (python . t)
-     (dot . t)
-     (screen . t)
-     (fortran . t)
-     (prolog . t)
-     (kotlin . t)
-     (http . t)
-     (R . t)
-     (ditaa . t)
-     (js . t)
-     (ammonite . t)
-     (shell . t)
-     (sql . t)
-     (plantuml . t)
-     (ocaml . t))))
-
+        org-confirm-babel-evaluate 'zerosign-confirm-babel-evaluate))
+(use-package ox-hugo)
 (use-package org-projectile
-  :pin melpa
+
   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
          ("C-c c" . org-capture))
   :config
@@ -593,79 +401,124 @@ See URL `http://www.scala-lang.org/'."
     (setq org-log-done 'note)
     (setq org-projectile-per-project-filepath ".notes/todo.org")
     (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-    (push (org-projectile-project-todo-entry) org-capture-templates))
-  :ensure t)
+    (push (org-projectile-project-todo-entry) org-capture-templates)))
 
-(use-package ob-ammonite :pin melpa
+(use-package ob-ammonite
   :after org
   :init
   (add-to-list 'org-babel-load-languages '((ammonite . t))))
 
-(use-package ob-rust :quelpa (ob-rust :fetcher gitlab :repo "ajyoon/ob-rust")
-  :after org
-  :init
-  (add-to-list 'org-babel-load-languages '((rust . t))))
-
-(use-package ob-go :quelpa (ob-go :fetcher gitlab :repo "pope/ob-go")
-  :after org
-  :init
-  (add-to-list 'org-babel-load-languages '((go . t))))
-
-;; (use-package ob-julia :quelpa (ob-julia :fetcher github :repo "gjkerns/ob-julia")
-;;   :after org
-;;   :init
-;;   (add-to-list 'org-babel-load-languages '((julia . t))))
-
-(use-package ob-restclient :pin melpa
+(use-package ob-restclient
   :after org
   :init
   (add-to-list 'org-babel-load-languages '((restclient . t))))
-
-(use-package xmlgen :pin melpa)
-
-(use-package ob-mermaid :pin melpa :ensure t
+(use-package ob-mermaid
   :after org
   :init
   (add-to-list 'org-babel-load-languages '((mermaid . t))))
-
-(use-package ob-prolog :ensure t :pin melpa
+(use-package ob-prolog
   :after org
   :init
   (add-to-list 'org-babel-load-languages '((prolog . t))))
-
-;; (use-package org-ql :pin melpa :ensure t)
-(use-package org-jira :pin melpa :ensure t)
-(use-package ox-rfc :pin melpa :ensure t)
-(use-package ox-epub :pin melpa :ensure t)
-(use-package ox-gfm :pin melpa :ensure t)
-(use-package ox-rst :pin melpa :ensure t)
-;; (use-package ob-diagram :pin melpa :ensure t)
-(use-package org-index :pin melpa :ensure t)
-;; (use-package org-ioslide :pin melpa :ensure t)
-(use-package org-kanban :pin melpa :ensure t)
-(use-package org-trello :pin melpa :ensure t)
-(use-package ox-ioslide :pin melpa :ensure t)
-(use-package org-tree-slide :pin melpa :ensure t)
-(use-package verb :pin melpa :ensure t)
-
-(use-package org-ref :pin melpa :ensure t)
-
-(global-set-key (kbd "C-c l") 'org-store-link)
-
+(use-package org-jira)
+(use-package ox-rfc)
+(use-package ox-epub)
+(use-package ox-gfm)
+(use-package ox-rst)
+(use-package org-index)
+(use-package org-kanban)
+;; (use-package org-trello)
+;; (use-package ox-ioslide)
+(use-package org-tree-slide)
+(use-package ob-kotlin)
+(use-package org-ref)
+(use-package org-brain)
 (use-package org-bullets
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+;; (use-package polymode)
+(use-package orgit)
+(global-set-key (kbd "C-c l") 'org-store-link)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((clojure . t)
+   (emacs-lisp . t)
+   (gnuplot . t)
+   (java . t)
+   (clojure . t)
+   (C . t)
+   (lilypond . t)
+   (ruby . t)
+   ;; (rust . t)
+   ;; (rustic . t)
+   (python . t)
+   (dot . t)
+   (screen . t)
+   (fortran . t)
+   (prolog . t)
+   (kotlin . t)
+   ;; (http . t)
+   (R . t)
+   (ditaa . t)
+   (js . t)
+   (ammonite . t)
+   (shell . t)
+   (sql . t)
+   (plantuml . t)
+   (ocaml . t)))
 
-(use-package doct :ensure t :commands (doct))
-(use-package gitlab-ci-mode :pin melpa :ensure t)
-(use-package gitlab-ci-mode-flycheck :pin melpa :ensure t)
-(use-package orgit :ensure t :pin melpa)
+;;(defun zerosign--devs ()
+;;  (interactive)
+(use-package jdecomp
+  :config (setq jdecomp-decompiler-type 'fernflower
+                jdecomp-decompiler-paths '((cfr . "/opt/jde/cfr.jar")
+                                           (fernflower . "/opt/jde/fernflower.jar")
+                                           (procyon . "/opt/jde/procyon.jar"))))
+(use-package gitignore-templates)
+(use-package persistent-scratch
+  :config (persistent-scratch-setup-default))
+(use-package scratch)
+(use-package rvm)
+(use-package nvm)
+(use-package direnv)
+(use-package rust-playground)
+(use-package cargo)
+(use-package proof-general)
 
-;; (use-package ob-ipython :ensure t :pin melpa)
-(use-package ob-kotlin :ensure t :pin melpa)
-(use-package ob-http :ensure t :pin melpa)
+;;(defun zerosign--comp ()
+;;  (interactive)
+(use-package eglot
+  :config
+  (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
+(use-package rustic
+  :config
+  (setq rustic-lsp-client 'eglot
+        rustic-lsp-server 'rust-analyzer))
 
+;; (zerosign--setup-packages)
+;;(zerosign--init-essentials)
+;;(zerosign--themes)
+(load-theme 'poet t)
+;;(zerosign--setup-vc)
+;;(zerosign--pl-basic)
+;;(zerosign--pl-aux)
+;;(zerosign--flychecks)
+;;(zerosign--setup-org)
+;;(zerosign--devs)
+;;(zerosign--comp)
 
-;; (load-file "/home/zerosign/.emacs.d/flycheck-dotty.el")
+(use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
+(use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
+;; (use-package ob-rust :quelpa (ob-rust :fetcher gitlab :repo "ajyoon/ob-rust")
+;;     :after org
+;;     :init
+;;     (add-to-list 'org-babel-load-languages '((rust . t))))
 
-;; http://cachestocaches.com/
+(use-package ob-go :quelpa (ob-go :fetcher gitlab :repo "pope/ob-go")
+    :after org
+    :init
+    (add-to-list 'org-babel-load-languages '((go . t))))
+
+(use-package rmsbolt :quelpa (rmsbolt :fetcher gitlab :repo "jgkamat/rmsbolt"))
+
+(use-package doct :commands (doct))

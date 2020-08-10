@@ -1,7 +1,7 @@
 [user]
 name = zerosign
 email = r1nlx0@gmail.com
-signingkey = 3DF4BF3ED4F3AA05
+signingkey = B0E69FF084D37B2D
 
 [color]
 ui = auto
@@ -13,8 +13,8 @@ ignore = "ignore() { curl -sL https:://www.gitignore.io/api/$@ ;}; ignore"
 gpgsign = true
 
 [credential]
-   username = zerosign
-	helper = /usr/bin/pass-git-helper
+username = zerosign
+helper = /usr/bin/pass-git-helper
 
 [github]
 user = zerosign
