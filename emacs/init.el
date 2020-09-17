@@ -1,120 +1,137 @@
-;;; package -- Summary
-;;; Commentary: this is zerosign init.el
-;;; Code:
+(add-to-list 'term-file-aliases '("alacritty" . "xterm"))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; begin envs setup
-(defconst repository-dir (expand-file-name "Repositories" (getenv "HOME")))
-;; (defconst blog-dir (expand-file-name "blog/zerosign.github.io" repository-dir))
-;;(defconst twitter-dir (expand-file-name "twitter" (expand-file-name ".config" (concat (getenv "HOME")))))
-(defconst nvm-dir (concat (getenv "HOME") "/.nvm"))
-(defconst caches-dir (expand-file-name "caches" user-emacs-directory))
+(setq straight-recipes-gnu-elpa-use-mirror    t
+      straight-repository-branch              "develop"
+      straight-enable-use-package-integration t)
 
-(defun nvm-version (path)
-  "Return nvm current nvm version."
-  (substring (with-temp-buffer
-               (insert-file-contents (concat path "/alias/default"))
-               ;; eliminate newline (hack)
-               (buffer-string)) 0 -1))
-
-(defun nvm-bin-path (path)
-  "Return nvm current bin path"
-  (concat nvm-dir "/versions/node/" (nvm-version nvm-dir) "/bin"))
+(defvar bootstrap-version)
 
 (defconst default-snapshot-dir (expand-file-name "snapshots" user-emacs-directory))
 
-;; set opam environment
-(defun opam-env ()
-  (interactive nil)
-  (dolist (var (car (read-from-string (shell-command-to-string "opam config env --sexp"))))
-    (setenv (car var) (cadr var))))
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+(global-linum-mode t)
 
-;; use define-inline or defsubst
-;; ('home . "go/bin") .
-;; ('home . ".cargo/bin") .
-;; ('home . ".local/bin") .
-;; ('home . ".local/share/coursier/bin") .
-;; ('home . 'nvm-path) .
-;; ('home . 'opam-path)
-;; ('aux  . "dotty/current/bin")
+(setq auto-window-vscroll nil)
+(global-auto-revert-mode t)
+;; (menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
 
-;; ('home . (getenv "HOME")) .
-;; ('aux  . "/opt") .
-;; ('cache . '(path-of 'user-emacs-directory "caches"))
-;; ('repo . '(path-of 'home "Repositories"))
+(setq-default indent-tabs-mode nil)
+(setq-default tab-width 3)
+(setq inhibit-startup-screen t
+      initial-scratch-message nil
+      initial-major-mode 'text-mode
+      make-backup-files nil
+      scroll-error-top-bottom t
+      ;; use-package-always-ensure t
+      ring-bell-function 'ignore
+      create-lockfiles nil
+      backup-directory-alist `((".*" . ,temporary-file-directory))
+      auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
+      delete-old-versions t
+      kept-new-versions 6
+      kept-old-versions 2
+      version-control t)
 
-(setq extra-paths
-      (list (concat (getenv "HOME") "/go/bin")
-            (concat (getenv "HOME") "/.cargo/bin")
-            ;; (concat (getenv "HOME") "/.opam/4.09.0+fp+flambda/bin")
-            (concat (getenv "HOME") "/.local/bin")
-            "/opt/dotty/current/bin"
-            (concat (getenv "HOME") "/.local/share/coursier/bin")
-            (nvm-bin-path nvm-dir)))
+(setenv "LANG"   "en_US.UTF-8")
+(setenv "LC_ALL" "en_US.UTF-8")
+(prefer-coding-system 'utf-8)
+(set-language-environment "UTF-8")
+(setenv "GO111MODULE" "on")
 
-;; (add-to-list 'load-path "/opt/mu/share/emacs/site-lisp/mu4e")
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(defun set-external-paths (externals)
-  (let ((paths (append (delete-dups (split-string (getenv "PATH") ":")) externals)))
-    (setenv "PATH"
-     (seq-reduce
-      '(lambda (lhs rhs) (concat lhs path-separator rhs)) paths ""))
-    (setq exec-path (append exec-path externals))
-    (opam-env)))
-
-(set-external-paths extra-paths)
-
-(defun zerosign--setup-envs ()
-  (setenv "LANG"   "en_US.UTF-8")
-  (setenv "LC_ALL" "en_US.UTF-8")
-  (prefer-coding-system 'utf-8)
-  (set-language-environment "UTF-8")
-  (setenv "GO111MODULE" "on"))
-
-(defun zerosign--setup-tls ()
-  (setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3"
-        gnutls-log-level 0))
-
-(zerosign--setup-tls)
+(straight-use-package 'use-package)
 
 (require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("elpa"  . "https://elpa.gnu.org/packages/")
-                         ;; ("org"   . "https://orgmode.org/elpa")
-                         ("ublt" . "https://elpa.ubolonton.org/packages/")))
-(package-initialize)
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
 
-(require 'use-package)
+;; Automatically :ensure each use-package.
+;; (setq use-package-always-pin "melpa")
+(use-package poet-theme :straight t)
+(use-package ayu-theme :straight t)
 
-(setq-default use-package-always-defer t
-	      use-package-always-ensure t)
+;; (load-theme 'poet t)
+;; (load-theme 'ayu-light t)
+(load-theme 'modus-operandi t)
 
-(use-package quelpa :demand t
+;; (straight-use-package 'deadgrep)
+(use-package deadgrep :straight t :bind (("C-c C-s"  . deadgrep)))
+
+;; (straight-use-package 'company)
+(use-package company
+  :straight t
+  :diminish
+  :config
+  (global-company-mode t)
+  (setq ;; Only 2 letters required for completion to activate.
+        company-minimum-prefix-length 2
+        ;; Search other buffers for completion candidates
+        company-dabbrev-other-buffers t
+        company-dabbrev-code-other-buffers t
+        ;; Allow (lengthy) numbers to be eligible for completion.
+        company-complete-number t
+        ;; M-⟪num⟫ to select an option according to its number.
+        company-show-numbers t
+        ;; Edge of the completion list cycles around.
+        company-selection-wrap-around t
+        ;; Do not downcase completions by default.
+        company-dabbrev-downcase nil
+        ;; Even if I write something with the ‘wrong’ case,
+        ;; provide the ‘correct’ casing.
+        company-dabbrev-ignore-case t
+        ;; Immediately activate completion.
+        company-idle-delay 0))
+
+(add-hook 'prog-mode-hook 'company-mode)
+
+;; (straight-use-package 'prescient)
+(use-package prescient :straight t :defer t)
+;; (prescient-persist-mode +1)
+
+;; (straight-use-package 'ivy-prescient)
+(use-package ivy-prescient :straight t :defer t)
+;; (ivy-prescient-mode +1)
+
+;; (straight-use-package 'company-prescient)
+(use-package company-prescient :straight t :defer t)
+;;(company-prescient-mode +1)
+
+(use-package protobuf-mode
   :init
-  (quelpa
-   '(quelpa-use-package
-     :fetcher git
-     :url "https://github.com/quelpa/quelpa-use-package"))
-  (require 'quelpa-use-package))
+  (add-to-list 'auto-mode-alist '("\\.proto$" . protobuf-mode)))
 
-(use-package ivy :demand t :diminish ivy-mode
+;; (straight-use-package 'selectrum-prescient)
+;; (use-package selectrum-prescient)
+
+;; (straight-use-package 'ivy)
+;; (straight-use-package 'smex)
+;; (straight-use-package 'flx)
+(use-package ivy :straight t :demand t :diminish ivy-mode
   :init
-  (setq ivy-use-virtual-buffers t
-        ivy-initial-inputs-alist nil
-        ivy-re-builders-alist '((t . ivy--regex-fuzzy))
-        ivy-extra-directories nil)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-initial-inputs-alist nil)
+  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+  (setq ivy-extra-directories nil)
   :config
   (define-key ivy-minibuffer-map (kbd "C-l") (kbd "DEL"))
-  (use-package smex
-    :init (setq-default smex-history-length 32
-			smex-save-file (expand-file-name "smex-items" default-snapshot-dir)))
-  (use-package flx)
+  (use-package flx :straight t :ensure t)
   (ivy-mode)
   :bind (("C-c C-r" . ivy-resume)
          ("<f6>"    . ivy-resume)
@@ -125,400 +142,313 @@
          ("C-j"      . ivy-next-line)
          ("C-k"      . ivy-previous-line)))
 
-(use-package centaur-tabs
-  :ensure t
-  :demand
+(straight-use-package 'swiper)
+(global-set-key "\C-s" 'swiper)
+
+;; (straight-use-package 'magit)
+(use-package magit
+  :straight t
+  :defer t
+  :commands magit-status
+  :hook ((magit-popup-mode-hook . no-trailing-whitespace)
+	 (git-commit-mode . goto-address-mode)))
+
+;; (straight-use-package 'magit-todos)
+(use-package magit-todos :straight t :defer t)
+
+(use-package magit-delta :straight t :defer t)
+
+(require 'subr-x)
+(straight-use-package 'git)
+
+(defun org-git-version ()
+  "The Git version of org-mode.
+Inserted by installing org-mode or when a release is made."
+  (require 'git)
+  (let ((git-repo (expand-file-name
+                   "straight/repos/org/" user-emacs-directory)))
+    (string-trim
+     (git-run "describe"
+              "--match=release\*"
+              "--abbrev=6"
+              "HEAD"))))
+
+(defun org-release ()
+  "The release version of org-mode.
+Inserted by installing org-mode or when a release is made."
+  (require 'git)
+  (let ((git-repo (expand-file-name
+                   "straight/repos/org/" user-emacs-directory)))
+    (string-trim
+     (string-remove-prefix
+      "release_"
+      (git-run "describe"
+               "--match=release\*"
+               "--abbrev=0"
+               "HEAD")))))
+
+(use-package plantuml-mode :straight t
   :config
-  (centaur-tabs-mode t)
-  :bind
-  ("C-<prior>" . centaur-tabs-backward)
-  ("C-<next>" . centaur-tabs-forward))
+  (setq plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar"
+        plantuml-default-exec-mode 'jar))
 
-(use-package swiper
-  ;; :init (ivy-mode)
-  :config (setq ivy-use-virtual-buffers t
-                enable-recursive-minibuffers t)
-  :bind (("C-s"     . swiper)
-         ("C-c C-r" . ivy-resume)
-         ("<f6>"    . ivy-resume)
-         ("M-x"     . counsel-M-x)
-         ("C-x C-f" . counsel-find-file)
-         ("C-c k"   . ounsel-rg)))
+(use-package flycheck-plantuml :straight t
+  :hook (plantuml . flycheck))
 
-(use-package projectile :diminish projectile-mode
-  :init (setq projectile-enable-caching t
-	      projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
-	      projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
-	      projectile-completion-system 'ivy
-	      projectile-switch-project-action 'projectile-dired)
-  :config (projectile-mode)
-  :bind (("C-c f" . projectile-find-file)
-         ("C-c p" . projectile-switch-project)))
-(use-package counsel)
-;; (use-package spinner :pin elpa :ensure t)
-(use-package deadgrep
-  :bind (("C-c C-s"  . deadgrep)))
-(use-package counsel-projectile
-  :diminish counsel-projectile-mode
-  :config (counsel-projectile-mode) :init
-  (setq projectile-switch-project-action 'projectile-dired))
-(use-package pass)
-(use-package password-store)
-(use-package password-store-otp)
-(use-package auth-source-pass
-  :init (auth-source-pass-enable))
-(use-package tramp :init
-  (setq tramp-default-method "ssh"))
-(use-package company
-  :demand t
-  :config (setq company-dabbrev-downcase nil
-                company-show-numbers t
-                company-minimum-prefix-length 2
-                company-dabbrev-other-buffers t
-                company-idle-delay 0)
-  :init (global-company-mode))
-(use-package epg :config (setq epg-gpgconf-program "gpg"))
-(use-package restclient)
-(use-package restclient-helm)
-(use-package ssh-agency)
-(use-package ssh-config-mode)
-(use-package sudo-edit)
-(use-package systemd)
-(global-auto-revert-mode t)
-(use-package yasnippet)
-(use-package verb)
-;; eldoc
-(use-package eldoc
-  :diminish eldoc-mode :commands eldoc-mode)
-(use-package flycheck :config (global-flycheck-mode))
-
-(defun zerosign--setup-layouts ()
-  (interactive)
-  (setq auto-window-vscroll nil
-		  indent-tabs-mode nil
-		  tab-width 3
-		  inhibit-startup-screen t
-		  initial-scratch-message nil
-		  initial-major-mode 'org-mode
-		  make-backup-files nil
-		  scroll-error-top-bottom t
-		  ring-bell-function 'ignore)
-  (global-linum-mode t)
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (scroll-bar-mode -1))
-
-(defun zerosign--setup-defaults ()
-  (setq backup-directory-alist `((".*" . ,temporary-file-directory))
-        auto-save-file-name-transforms `((".*" ,temporary-file-directory t))
-        delete-old-versions t
-        create-lockfiles nil
-        kept-new-versions 6
-        kept-old-versions 2
-        version-control t))
-
-(defun zerosign--config-font (&optional frame)
-  (with-selected-frame (or frame (selected-frame))
-    (set-face-attribute 'default t :font "Source Code Variable-10:Semibold")
-    (set-face-attribute 'default nil :font "Source Code Variable-10:Semibold")))
-
-(defun zerosign--setup-hooks ()
-  (add-hook 'after-make-frame-functions #'zerosign--config-font)
-  (add-hook 'before-save-hook 'delete-trailing-whitespace))
-
-(zerosign--setup-hooks)
-(zerosign--setup-layouts)
-(zerosign--setup-envs)
-(zerosign--setup-defaults)
-
-;;(defun zerosign--docs ()
-;;  (interactive)
-(use-package adoc-mode
-  :mode "\\.adoc\\$")
-(use-package markdown-mode
-  :commands (markdown-mode gfm-mode)
-  :mode (("README\\.md\\'" . gfm-mode)
-         ("\\.md\\'" . markdown-mode)
-         ("\\.markdown\\'" . markdown-mode))
-  :init (setq markdown-command "multimarkdown"))
-(use-package mermaid-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode)))
-
-;;(defun zerosign--themes ()
-;;  (interactive)
-(use-package gruvbox-theme)
-(use-package flatui-theme)
-(use-package brutalist-theme)
-;; (use-package zerodark-theme)
-(use-package cloud-theme)
-(use-package poet-theme)
-(use-package faff-theme)
-(use-package mood-one-theme)
-(use-package silkworm-theme)
-(use-package hydandata-light-theme)
-;; (use-package eziam-theme)
-(use-package parchment-theme)
-(use-package nord-theme )
-(use-package github-theme)
-(use-package brutal-theme)
-(use-package night-owl-theme)
-(use-package github-modern-theme)
-;; (use-package almost-mono-theme)
-(use-package darktooth-theme)
-(use-package flucui-themes)
-
-;;(defun zerosign--setup-vc ()
-;;(interactive)
-(use-package magit :commands magit-status magit-blame)
-(use-package magit-todos )
-(use-package magit-lfs )
-(use-package forge  :after magit)
-
-;;(defun zerosign--pl-basic ()
-;; scala supports
-(use-package scala-mode  :mode "\\.s\\(c\\|cala\\|bt\\)$")
-(use-package groovy-mode)
-(use-package erlang)
-(use-package php-mode)
-(use-package typescript-mode)
-(use-package haskell-mode)
-;; rust supports
-(use-package rust-mode  :mode "\\.rs$"
-  :config (setq rust-format-on-save t
-                ;; https://github.com/rust-lang/rust-mode/issues/288#issuecomment-469276567
-                rust-match-angle-brackets nil))
-(use-package zig-mode)
-;; go supports
-(use-package go-mode  :mode "\\.go$"
-  :hook (before-save . gofmt-before-save))
-;; ocaml supports
-(use-package tuareg)
-(use-package dune)
-;; elixir supports
-(use-package elixir-mode)
-;; futhark supports
-(use-package futhark-mode)
-;; fish-shell supports
-(use-package fish-mode)
-(use-package kotlin-mode)
-(use-package tree-sitter
-  :pin ublt
-  :after tree-sitter-langs
-  :demand t
-  :hook ((js-mode . tree-sitter-hl-mode)
-         (typescript-mode . tree-sitter-hl-mode)
-         (python-mode . tree-sitter-hl-mode)
-         (rust-mode . tree-sitter-hl-mode)
-         (go-mode . tree-sitter-hl-mode)
-         (scala-mode . tree-sitter-hl-mode)
-         (clojure-mode . tree-sitter-hl-mode)
-         (java-mode . tree-sitter-hl-mode)
-         (ocaml-mode . tree-sitter-hl-mode)
-         (tuareg-mode . tree-sitter-hl-mode))
-  :config (progn
-            (require 'tree-sitter-query)
-            (require 'tree-sitter-hl)
-            (global-tree-sitter-mode)))
-
-(use-package tree-sitter-langs :pin ublt)
-
-;;(defun zerosign--flychecks ()
-;;  (interactive)
-(use-package flycheck-elixir)
-(use-package gitlab-ci-mode-flycheck)
-(use-package flycheck-plantuml)
-(use-package flycheck-rust
-  :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
-(use-package flycheck-gradle
-  :commands (flycheck-gradle-setup)
-  :init (mapc (lambda (x)
-                (add-hook x #'flycheck-gradle-setup))
-	      '(java-mode-hook kotlin-mode-hook)))
-(flycheck-define-checker scala
-			 "A Scala syntax checker using the Scala compiler.
-    See URL `http://www.scala-lang.org/'."
-			 :command ("scalac" "-target:1.12" "-encoding" "UTF-8" "-deprecation" "-opt-warnings" source)
-			 :error-patterns
-			 ((error line-start (file-name) ":" line ": error: " (message) line-end))
-			 :modes scala-mode
-			 :next-checkers ((warning . scala-scalastyle)))
-
-;;(defun zerosign--pl-aux ()
-;;  (interactive)
-(use-package graphviz-dot-mode)
-(use-package gitlab-ci-mode)
-(use-package gradle-mode)
-(use-package meson-mode)
-(use-package jsonnet-mode )
-(use-package json-mode)
-(use-package dockerfile-mode)
-(use-package docker-compose-mode)
-(use-package rfc-mode)
-(use-package jq-mode)
-(use-package pest-mode)
-(use-package terraform-mode)
-(use-package gitignore-mode)
-(use-package protobuf-mode)
-(use-package pug-mode)
-(use-package gnuplot)
-(use-package nginx-mode)
-(use-package pkgbuild-mode)
-(use-package plantuml-mode)
-(use-package editorconfig
-  :config (editorconfig-mode t))
-(use-package bnf-mode)
-(use-package editorconfig-charset-extras)
-
-;;(defun zerosign--devops ()
-;;  (interactive)
-(use-package ansible)
-
-(defun zerosign-confirm-babel-evaluate (lang body)
-  (member lang '("plantuml" "ditaa")))
-
-;;(defun zerosign--setup-org ()
-;;  (interactive)
-(use-package org
+(use-package org-plus-contrib :straight t
   :mode (("\\.org$" . org-mode))
-  :hook ((org-shiftleft-final . windmove-left)
-         (org-shiftdown-final . windmove-down)
-         (org-shiftright-final . windmove-right))
+  :init
+  (require 'ob-dot)
+  (require 'ob-plantuml)
+  (setq org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar")
   :config
-  (setq org-src-tab-acts-natively t
-        org-support-shift-select 'always
-        org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0.11.jar"
-        org-plantuml-jar-path "/usr/share/java/plantuml/plantuml.jar"
-        org-confirm-babel-evaluate 'zerosign-confirm-babel-evaluate))
-(use-package ox-hugo)
-(use-package org-projectile
+  (add-to-list 'org-src-lang-modes '("dot" . graphviz-dot))
+  (add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((clojure . t)
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (java . t)
+     (clojure . t)
+     (dot . t)
+     (C . t)
+     (lilypond . t)
+     (ruby . t)
+     ;; (rust . t)
+     ;; (rustic . t)
+     (python . t)
+     (dot . t)
+     (screen . t)
+     (fortran . t)
+     ;; (prolog . t)
+     ;; (kotlin . t)
+     ;; (http . t)
+     ;; (R . t)
+     (ditaa . t)
+     (js . t)
+     (ammonite . t)
+     (shell . t)
+     (sql . t)
+     (plantuml . t)
+     (ocaml . t)))
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)))
 
+(use-package org-projectile
+  :straight t
   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
          ("C-c c" . org-capture))
   :config
   (progn
-    (org-projectile-per-project)
-    (setq org-log-done 'note)
-    (setq org-projectile-per-project-filepath ".notes/todo.org")
-    (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+    (setq org-projectile-per-project-filepath ".notes/notes.org"
+          org-agenda-files (append agenda-files (org-projectile-todo-files)))
     (push (org-projectile-project-todo-entry) org-capture-templates)))
 
-(use-package ob-ammonite
-  :after org
-  :init
-  (add-to-list 'org-babel-load-languages '((ammonite . t))))
+;; (use-package ob-ammonite :straight t)
+;; ;; (use-package org
+;; ;;   :straight org-plus-contrib
+;; ;;   :mode (("\\.org$" . org-mode))
+;; ;;   ("C-c l" . org-store-link)
+;; ;;   ("C-c a" . org-agenda))
 
-(use-package ob-restclient
-  :after org
+
+;; ;; (org-babel-do-load-languages
+;; ;;  'org-babel-load-languages
+;; ;;  '((clojure . t)
+;; ;;    (emacs-lisp . t)
+;; ;;    (gnuplot . t)
+;; ;;    (java . t)
+;; ;;    (clojure . t)
+;; ;;    (dot . t)
+;; ;;    (C . t)
+;; ;;    (lilypond . t)
+;; ;;    (ruby . t)
+;; ;;    ;; (rust . t)
+;; ;;    ;; (rustic . t)
+;; ;;    (python . t)
+;; ;;    (dot . t)
+;; ;;    (screen . t)
+;; ;;    (fortran . t)
+;; ;;    ;; (prolog . t)
+;; ;;    ;; (kotlin . t)
+;; ;;    (http . t)
+;; ;;    ;; (R . t)
+;; ;;    (ditaa . t)
+;; ;;    (js . t)
+;; ;;    (ammonite . t)
+;; ;;    (shell . t)
+;; ;;    (sql . t)
+;; ;;    (plantuml . t)
+;; ;;    (ocaml . t)))
+
+(use-package polymode :straight t)
+(use-package poly-markdown :straight t)
+(use-package poly-org :straight t)
+
+(add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.org" . poly-org-mode))
+
+(use-package org-ql :straight t :defer t)
+(use-package magit-org-todos :straight t :defer t :config (magit-org-todos-autoinsert))
+
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
+
+(straight-use-package 'forge)
+
+(straight-use-package 'projectile)
+(use-package projectile :straight t :diminish projectile-mode
   :init
-  (add-to-list 'org-babel-load-languages '((restclient . t))))
-(use-package ob-mermaid
-  :after org
+  (setq projectile-enable-caching t
+	projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
+	projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
+	projectile-completion-system 'ivy
+	projectile-switch-project-action 'projectile-dired)
+  :config (projectile-mode)
+  :bind (("C-c f" . projectile-find-file)
+	 ("C-c p" . projectile-switch-project)))
+
+(straight-use-package
+ '(tree-sitter :host github
+               :repo "ubolonton/emacs-tree-sitter"
+               :files ("lisp/*.el")))
+
+(straight-use-package
+ '(tree-sitter-langs :host github
+                     :repo "ubolonton/emacs-tree-sitter"
+                     :files ("langs/*.el" "langs/queries")))
+
+(require 'tree-sitter)
+(require 'tree-sitter-hl)
+(require 'tree-sitter-langs)
+(add-to-list 'tree-sitter-major-mode-language-alist '(tuareg-mode . ocaml))
+
+(require 'tree-sitter-debug)
+(require 'tree-sitter-query)
+
+(add-hook 'tree-sitter-mode-hook #'tree-sitter-hl-mode)
+
+(global-tree-sitter-mode)
+
+(straight-use-package 'go-mode)
+(straight-use-package 'rust-mode)
+(straight-use-package 'scala-mode)
+(straight-use-package 'tuareg)
+
+(use-package flycheck-mercury :straight t)
+
+(straight-use-package 'verb)
+
+(use-package racket-mode :straight t)
+
+(use-package crystal-mode :straight t)
+
+(use-package company-lsp :straight t)
+
+(use-package lsp-metals :straight t)
+
+(use-package lsp-mode
+  :straight t
   :init
-  (add-to-list 'org-babel-load-languages '((mermaid . t))))
-(use-package ob-prolog
-  :after org
-  :init
-  (add-to-list 'org-babel-load-languages '((prolog . t))))
-(use-package org-jira)
-(use-package ox-rfc)
-(use-package ox-epub)
-(use-package ox-gfm)
-(use-package ox-rst)
-(use-package org-index)
-(use-package org-kanban)
-;; (use-package org-trello)
-;; (use-package ox-ioslide)
-(use-package org-tree-slide)
-(use-package ob-kotlin)
-(use-package org-ref)
-(use-package org-brain)
-(use-package org-bullets
+  (setq lsp-rust-server 'rust-analyzer)
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         ;; if you want which-key integration
+         ;; (racket-mode . lsp-racket-enable)
+         (crystal-mode . lsp)
+         (tuareg-mode . lsp)
+         (kotlin-mode . lsp)
+         (typescript-mode . lsp)
+         (rust-mode . lsp)
+         (go-mode . lsp)
+         (scala-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+;; optionally
+(use-package lsp-ui :straight t :commands lsp-ui-mode)
+;; if you are helm user
+(use-package helm-lsp :straight t :commands helm-lsp-workspace-symbol)
+;; if you are ivy user
+(use-package lsp-ivy :straight t :commands lsp-ivy-workspace-symbol)
+;; (use-package lsp-treemacs :pin melpa :commands lsp-treemacs-errors-list)
+
+(use-package rmsbolt :straight t)
+
+;; optionally if you want to use debugger
+(use-package dap-mode :straight t)
+;; (use-package dap-LANGUAGE) to load the dap adapter for your language
+
+(use-package treemacs :straight t)
+
+;; optional if you want which-key integration
+(use-package which-key
+  :straight t
   :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-;; (use-package polymode)
-(use-package orgit)
-(global-set-key (kbd "C-c l") 'org-store-link)
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '((clojure . t)
-   (emacs-lisp . t)
-   (gnuplot . t)
-   (java . t)
-   (clojure . t)
-   (C . t)
-   (lilypond . t)
-   (ruby . t)
-   ;; (rust . t)
-   ;; (rustic . t)
-   (python . t)
-   (dot . t)
-   (screen . t)
-   (fortran . t)
-   (prolog . t)
-   (kotlin . t)
-   ;; (http . t)
-   (R . t)
-   (ditaa . t)
-   (js . t)
-   (ammonite . t)
-   (shell . t)
-   (sql . t)
-   (plantuml . t)
-   (ocaml . t)))
+  (which-key-mode))
 
-;;(defun zerosign--devs ()
-;;  (interactive)
-(use-package jdecomp
-  :config (setq jdecomp-decompiler-type 'fernflower
-                jdecomp-decompiler-paths '((cfr . "/opt/jde/cfr.jar")
-                                           (fernflower . "/opt/jde/fernflower.jar")
-                                           (procyon . "/opt/jde/procyon.jar"))))
-(use-package gitignore-templates)
-(use-package persistent-scratch
-  :config (persistent-scratch-setup-default))
-(use-package scratch)
-(use-package rvm)
-(use-package nvm)
-(use-package direnv)
-(use-package rust-playground)
-(use-package cargo)
-(use-package proof-general)
+(use-package flycheck :straight t)
 
-;;(defun zerosign--comp ()
-;;  (interactive)
-(use-package eglot
+(use-package epg :straight t :config (setq epg-gpgconf-program "gpg"))
+
+(use-package gradle-mode :straight t)
+(use-package flycheck-gradle :straight t)
+
+(use-package kotlin-mode :straight t)
+
+(use-package persistent-scratch :straight t :config (persistent-scratch-setup-default))
+(use-package dockerfile-mode :straight t)
+(use-package docker-compose-mode :straight t)
+(use-package dune :straight t)
+
+(use-package pass :straight t)
+(use-package password-store :straight t)
+(use-package password-store-otp :straight t)
+(use-package auth-source-pass :straight t :init (auth-source-pass-enable))
+
+(use-package graphviz-dot-mode :straight t)
+
+(use-package ripgrep :straight t)
+
+(use-package bnf-mode :straight t)
+
+(use-package emacsql-psql :straight t)
+(use-package emacsql-mysql :straight t)
+(use-package pcap-mode :straight t)
+
+(use-package magithub :straight t)
+(use-package ghub :straight t)
+(use-package ghub+ :straight t)
+(use-package github-browse-file :straight t)
+
+(use-package typescript-mode :straight t)
+
+(setq wl-copy-process nil)
+
+(defun wl-copy (text)
+  (setq wl-copy-process (make-process :name "wl-copy"
+                                      :buffer nil
+                                      :command '("wl-copy" "-f" "-n")
+                                      :connection-type 'pipe))
+  (process-send-string wl-copy-process text)
+  (process-send-eof wl-copy-process))
+
+(defun wl-paste ()
+  (if (and wl-copy-process (process-live-p wl-copy-process))
+      nil
+    (shell-command-to-string "wl-paste -n | tr -d \r")))
+
+(setq interprogram-cut-function 'wl-copy)
+(setq interprogram-paste-function 'wl-paste)
+
+(use-package gist :straight t
   :config
-  (add-to-list 'eglot-server-programs `(tuareg-mode . ("ocamllsp"))))
-(use-package rustic
-  :config
-  (setq rustic-lsp-client 'eglot
-        rustic-lsp-server 'rust-analyzer))
+  (setq gist-list-format '((created "Created" 15 nil "%D" "%R")
+                           (id      "Id"      10 nil identity)
+                           (files   "Files"   35 nil (lambda (files) (mapconcat 'identity files ", ")))
+                           (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
+                           (description "Description" 0 nil identity))))
 
-;; (zerosign--setup-packages)
-;;(zerosign--init-essentials)
-;;(zerosign--themes)
-(load-theme 'poet t)
-;;(zerosign--setup-vc)
-;;(zerosign--pl-basic)
-;;(zerosign--pl-aux)
-;;(zerosign--flychecks)
-;;(zerosign--setup-org)
-;;(zerosign--devs)
-;;(zerosign--comp)
-
-(use-package wat-mode :quelpa (wat-mode :fetcher github :repo "devonsparks/wat-mode"))
-(use-package tla-pcal-mode :quelpa (tla-pcal-mode :fetcher github :repo "mrc/tla-tools"))
-;; (use-package ob-rust :quelpa (ob-rust :fetcher gitlab :repo "ajyoon/ob-rust")
-;;     :after org
-;;     :init
-;;     (add-to-list 'org-babel-load-languages '((rust . t))))
-
-(use-package ob-go :quelpa (ob-go :fetcher gitlab :repo "pope/ob-go")
-    :after org
-    :init
-    (add-to-list 'org-babel-load-languages '((go . t))))
-
-(use-package rmsbolt :quelpa (rmsbolt :fetcher gitlab :repo "jgkamat/rmsbolt"))
-
-(use-package doct :commands (doct))
+(use-package browse-at-remote :straight t)
