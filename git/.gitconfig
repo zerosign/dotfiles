@@ -1,23 +1,48 @@
 [user]
-name = zerosign
-email = r1nlx0@gmail.com
-signingkey = B0E69FF084D37B2D
+	email = r1nlx0@gmail.com
+	signingkey = B0E69FF084D37B2D
 
 [color]
-ui = auto
+	ui = auto
 
 [alias]
-ignore = "ignore() { curl -sL https:://www.gitignore.io/api/$@ ;}; ignore"
+	ignore = "ignore() { curl -sL https:://www.gitignore.io/api/$@ ;}; ignore"
+	appraise = /home/zerosign/go/bin/git-appraise
 
 [commit]
-gpgsign = true
+	gpgsign = true
 
 [credential]
-username = zerosign
-helper = /usr/bin/pass-git-helper
+	helper = /usr/bin/pass-git-helper
 
 [github]
-user = zerosign
+   username = zerosign
+	user = zerosign
 
 [gitlab]
-user = r1nlx0
+	user = zerodevs
+   username = zerodevs
+
+[gpg]
+	program = gpg
+
+[format]
+	signoff = true
+
+[core]
+	pager = delta --theme Github
+
+[pull]
+	ff = only
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    features = side-by-side line-numbers decorations
+    whitespace-error-style = 22 reverse
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box ul
+    file-style = bold yellow ul
+    file-decoration-style = none
