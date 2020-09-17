@@ -1,34 +1,42 @@
 final object packages {
 
   lazy val versions = Map(
-    "http4s" -> "0.21.0-M6",
-    "cats-effect" -> "2.0.0",
-    "scodec-bits" -> "1.1.12",
-    "scodec-core" -> "1.11.4",
-    "fs2" -> "2.1.0",
-    "circe" -> "0.12.3",
-    "circe-yaml" -> "0.12.0",
-    "log4s" -> "1.8.2",
-    "logback" -> "1.3.0-alpha5",
-    "logstash" -> "6.3",
-    "atto" -> "0.7.2",
+    "zio" -> "1.0.0",
+    "http4s" -> "1.0.0-M3",
+    // "cats-effect" -> "3.0-8096649",
+    "cats-effect" -> "2.2.0",
+    "scodec-bits" -> "1.1.18",
+    "scodec-core" -> "1.11.7",
+    "fs2" -> "2.4.2",
+    "coursier" -> "2.0.0-RC6-24",
+    "circe" -> "0.13.0",
+    "circe-yaml" -> "0.13.1",
+    "logstage" -> "0.10.17",
+    // "log4s" -> "1.8.2",
+    // "logback" -> "1.3.0-alpha5",
+    // "logstash" -> "6.4",
+    "atto" -> "0.8.0",
     "scalacache" -> "0.28.0",
     "sqlite" -> "3.30.1",
-    "enumeratum" -> "1.5.14",
-    "fastparse" -> "2.2.2",
-    "quill" -> "3.5.0",
-    "scalatags" -> "0.8.3",
-    "scalacss" -> "0.6.0-RC1",
-    "refined" -> "0.9.10",
-    "skunk" -> "0.0.7",
-    "doobie" -> "0.8.8",
-    "shapeless" -> "2.3.3",
-    "graal" -> "19.3.0.2",
-    "hashed-timer" -> "1.0.0-RC1",
-    "rocksdb" -> "6.3.6",
-    "prometheus" -> "0.7.0",
-    "geny" -> "0.4.2",
-    "scalameta" -> "4.2.3",
+    "enumeratum" -> "1.6.1",
+    "fastparse" -> "2.3.0",
+    "quill" -> "3.5.2",
+    "scalatags" -> "0.9.1",
+    "scalacss" -> "0.6.1",
+    "refined" -> "0.9.15",
+    "skunk" -> "0.0.19",
+    "doobie" -> "0.9.2",
+    "shapeless" -> "2.4.0-M1",
+    "graal" -> "20.1.0",
+    // "hashed-timer" -> "1.0.0-RC1",
+    "rocksdb" -> "6.11.4",
+    "prometheus" -> "0.9.0",
+    "geny" -> "0.6.2",
+    "scalameta" -> "4.3.20",
+    "natchez" -> "0.0.12",
+    "izumi" -> "1.0.0-M5",
+    "utest" -> "0.7.4",
+    "kube" -> "0.4.0",
   )
 
   @inline final def loadIvy(n: String, p: String, v: String) =
@@ -72,13 +80,20 @@ final object packages {
 
   @inline final def http4s(p: String, version: String) =
     loadIvy("org.http4s", p, version)
+
+  @inline final def izumi(p: String, version: String) =
+    loadIvy("io.7mind.izumi", p, version)
+
+  @inline final def zio(p: String, version: String) = loadIvy("dev.zio", p, version)
+
 }
 
 packages.typelevel("cats-effect", packages.versions("cats-effect"))
 packages.fs2("fs2-io", packages.versions("fs2"))
 packages.shapeless(packages.versions("shapeless"))
 
-Seq("circe-core", "circe-parser", "circe-generic").foreach(
+
+Seq("circe-core", "circe-parser", "circe-generic", "circe-optics").foreach(
   packages.circe(_, packages.versions("circe"))
 )
 
@@ -88,8 +103,16 @@ Seq("atto-core", "atto-refined").foreach(
   packages.tpolecat(_, packages.versions("atto"))
 )
 
-Seq("doobie-core", "doobie-postgres", "doobie-hikari", "doobie-h2").foreach(
+Seq("logstage-core", "logstage-rendering-circe").foreach(
+  packages.izumi(_, packages.versions("logstage"))
+)
+
+Seq("doobie-core", "doobie-postgres", "doobie-hikari", "doobie-h2", "doobie-quill").foreach(
   packages.tpolecat(_, packages.versions("doobie"))
+)
+
+Seq("natchez-core").foreach(
+  packages.tpolecat(_, packages.versions("natchez"))
 )
 
 Seq("scodec-core", "scodec-bits").foreach { p =>
@@ -111,9 +134,15 @@ Seq("refined", "refined-shapeless", "refined-scodec").foreach(
 packages.lihaoyi("fastparse", packages.versions("fastparse"))
 packages.lihaoyi("scalatags", packages.versions("scalatags"))
 packages.lihaoyi("geny", packages.versions("geny"))
+packages.lihaoyi("utest", packages.versions("utest"))
 
 packages.loadIvy("org.scalameta", "scalameta", packages.versions("scalameta"))
-packages.loadIvy("com.github.fomkin", "levsha-core", "0.9.0")
+packages.loadIvy("com.github.fomkin", "levsha-core", "0.10.0")
+packages.loadIvy("com.goyeau", "kubernetes-client", packages.versions("kube"))
+
+Seq("zio-streams", "zio").foreach(
+  packages.zio(_, packages.versions("zio"))
+)
 
 Seq("skunk-core", "skunk-circe", "skunk-macros").foreach(
   packages.tpolecat(_, packages.versions("skunk"))
@@ -138,6 +167,8 @@ Seq(
 packages.loadIvy("com.beachape", "enumeratum", packages.versions("enumeratum"))
 packages.loadIvy("com.beachape", "enumeratum", packages.versions("enumeratum"))
 
+packages.loadIvy("io.get-coursier", "coursier", packages.versions("coursier"))
+
 // rewrite this packages
 // packages.loadIvy("com.github.ifesdjeen", "hashed-wheel-timer-core", packages.versions("hashed-timer"))
 
@@ -145,6 +176,7 @@ packages.loadJava("org.graalvm.sdk", "graal-sdk", packages.versions("graal"))
 packages.loadJava("io.prometheus", "simpleclient", packages.versions("prometheus"))
 packages.loadJava("org.xerial", "sqlite-jdbc", packages.versions("sqlite"))
 packages.loadJava("org.rocksdb", "rocksdbjni", packages.versions("rocksdb"))
+// packages.loadJava("ch.qos.logback", "logback-classic", packages.versions("logback"))
 
 @
 
