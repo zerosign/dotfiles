@@ -17,7 +17,7 @@
 
 (setq auto-window-vscroll nil)
 (global-auto-revert-mode t)
-;; (menu-bar-mode -1)
+(menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 
@@ -284,7 +284,7 @@ Inserted by installing org-mode or when a release is made."
 
 (use-package polymode :straight t)
 (use-package poly-markdown :straight t)
-(use-package poly-org :straight t)
+;; (use-package poly-org :straight t)
 
 (add-to-list 'auto-mode-alist '("\\.md" . poly-markdown-mode))
 (add-to-list 'auto-mode-alist '("\\.org" . poly-org-mode))
@@ -435,13 +435,13 @@ Inserted by installing org-mode or when a release is made."
   (process-send-string wl-copy-process text)
   (process-send-eof wl-copy-process))
 
-(defun wl-paste ()
-  (if (and wl-copy-process (process-live-p wl-copy-process))
-      nil
-    (shell-command-to-string "wl-paste -n | tr -d \r")))
+;; (defun wl-paste ()
+;;   (if (and wl-copy-process (process-live-p wl-copy-process))
+;;       nil
+;;     (shell-command-to-string "wl-paste -n | tr -d \r")))
 
-(setq interprogram-cut-function 'wl-copy)
-(setq interprogram-paste-function 'wl-paste)
+;; (setq interprogram-cut-function 'wl-copy)
+;; (setq interprogram-paste-function 'wl-paste)
 
 (use-package gist :straight t
   :config
@@ -451,4 +451,22 @@ Inserted by installing org-mode or when a release is made."
                            (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
                            (description "Description" 0 nil identity))))
 
+
 (use-package browse-at-remote :straight t)
+
+(use-package xclip :straight t :init (xclip-mode))
+
+(straight-use-package
+ '(spthy-mode :type git
+              :host github :repo "tamarin-prover/tamarin-prover"
+              :branch "develop"
+              :files (("etc/spthy-mode.el" . "spthy-mode.el"))))
+
+(straight-use-package
+ '(tla+-mode :type git
+             :repo "https://git.sdf.org/bch/tlamode"
+             :branch "master"
+             :files (("lisp/tla+-mode.el" . "tla+-mode.el"))))
+
+(add-to-list 'auto-mode-alist '("\\.spthy" . spthy-mode))
+(add-to-list 'auto-mode-alist '("\\.tla" . tla+-mode))
