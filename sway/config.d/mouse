@@ -1,0 +1,6 @@
+input "1739:52575:SYNA2B46:00_06CB:CD5F_Touchpad" {
+      left_handed enabled
+      tap enabled
+      natural_scroll enabled
+      dwt enabled
+}

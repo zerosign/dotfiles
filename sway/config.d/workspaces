@@ -1,0 +1,93 @@
+bindsym $mod+1 workspace term
+bindsym $mod+2 workspace editor
+bindsym $mod+3 workspace browser
+bindsym $mod+4 workspace chat
+bindsym $mod+5 workspace book
+bindsym $mod+6 workspace cast
+bindsym $mod+7 workspace video
+bindsym $mod+8 workspace scratch
+bindsym $mod+9 workspace incognito
+
+# $mod+comma: Switch to previous workspace
+bindsym $mod+comma workspace prev
+# $mod+$right: Switch to previous workspace
+#bindsym $mod+$left workspace prev
+# $mod+period: Switch to next workspace
+bindsym $mod+period workspace next
+# $mod+$left: Switch to next workspace
+# bindsym $mod+$right workspace next
+# $mod+slash: Switch workspack back and forth
+bindsym $mod+slash workspace back_and_forth
+
+# XF86 arrow keys
+bindsym XF86Back workspace prev
+bindsym XF86Forward workspace next
+
+bindsym $mod+Shift+0 move window to workspace scratch, workspace scratch
+bindsym $mod+Shift+1 move window to workspace term, workspace term
+bindsym $mod+Shift+2 move window to workspace editor, workspace editor
+bindsym $mod+Shift+3 move window to workspace browser, workspace browser
+bindsym $mod+Shift+9 move window to workspace incognito, workspace incognito
+
+# mod+Shift+comma: Move focused window to previous monitor
+bindsym $mod+Shift+comma mark --add current; move container to output left; [con_mark="current"] focus; unmark current
+# mod+Shift+period: Move focused window to next monitor
+bindsym $mod+Shift+period mark --add current; move container to output right; [con_mark="current"] focus; unmark current
+# mod+Shift+slash: Swap workspaces between two monitors
+#bindsym $mod+Shift+slash exec swap-workspaces
+
+exec swaymsg workspace term
+
+for_window [instance="emacs"] {
+   move window to workspace editor
+}
+
+for_window [instance="atom"] {
+   move window to workspace editor
+}
+
+for_window [app_id="firefox-wayland"] {
+   move window to workspace browser
+}
+
+for_window [class="firefox-private"] {
+   move window to workspace incognito
+}
+
+for_window [class="TelegramDesktop"] {
+   move window to workspace chat
+}
+
+for_window [instance="slack"] {
+   move window to workspace chat
+}
+
+for_window [class="tilix"] {
+   move window to workspace term
+}
+
+for_window [class="obs"] {
+   move window to workspace cast
+}
+
+for_window [app_id="termite"] {
+   move window to workspace term
+}
+
+for_window [class="ffplay"] {
+   floating enable
+   move down 460
+   move right 805
+   sticky enabled
+   move window to workspace cast
+}
+
+for_window [class="mpv"] {
+   move window to workspace video
+}
+
+for_window [app_id="evince"] {
+   move window to workspace book
+}
+
+for_window [title="\ -\ Sharing\ Indicator$"] floating enable, sticky enable

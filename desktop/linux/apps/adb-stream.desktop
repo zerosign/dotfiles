@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Android Remote Client
+GenericName=Android Client
+Comment=Android Remote Client
+Exec=scrcpy -S -w
+Type=Application
+Terminal=false
+Categories=Development;
+StartupWMClass=Android
+Keywords=Android;

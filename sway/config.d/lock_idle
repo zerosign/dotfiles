@@ -1,0 +1,11 @@
+exec swayidle -w \
+     timeout 300 'lock' \
+     timeout 600 'swaymsg "output * dpms off"' \
+             resume 'swaymsg "output * dpms on"' \
+     before-sleep 'lock'
+
+for_window [class="^.*"] inhibit_idle fullscreen
+for_window [app_id="^.*"] inhibit_idle fullscreen
+
+bindsym $mod+s exec swaylock -f -c 000000 -i ~/.cache/wallpaper3.jpg
+bindsym $mod+Shift+s exec systemctl --user suspend

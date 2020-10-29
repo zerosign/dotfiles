@@ -1,0 +1,4 @@
+set $mod Mod1
+
+# include sway config from config.d/*
+include $HOME/.config/sway/config.d/*

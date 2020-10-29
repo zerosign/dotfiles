@@ -1,0 +1,9 @@
+set $uifont "Ubuntu 14"
+set $highlight #3daee9
+set $prompt #18b218
+set $term alacritty
+set $path "$PATH:$HOME/.local/bin:$HOME/.cargo/bin:/opt/container/bin:$HOME/go/bin"
+
+bindsym $mod+d exec j4-dmenu-desktop --dmenu='bemenu -i -n -b -p "▶" --nb "#323232" --nf "white" --fn "pango:Cantarell 9"' --term='alacritty'
+# bindsym $mod+d exec /home/zerosign/.local/bin/sirula
+bindsym $mod+Return exec $term
