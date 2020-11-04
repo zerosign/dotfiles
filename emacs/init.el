@@ -264,6 +264,11 @@
 
 (use-package lsp-mode
   :straight t
+  :config
+  (lsp-register-custom-settings
+   '(("gopls.completeUnimported" t t)
+     ("gopls.staticcheck" t t)
+     ("gopls.experimentalWorkspaceModule" t t)))
   :init
   (setq lsp-rust-server 'rust-analyzer
         read-process-output-max (* 1024 1024)
@@ -333,13 +338,15 @@
 (use-package projectile :straight t :diminish projectile-mode
   :init
   (setq projectile-enable-caching t
-	projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
-	projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
-	projectile-completion-system 'ivy
-	projectile-switch-project-action 'projectile-dired)
+	     projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
+	     projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
+	     projectile-completion-system 'ivy
+        projectile-indexing-method 'alien
+	     projectile-switch-project-action #'projectile-find-dir
+        projectile-find-dir-includes-top-level t)
   :config (projectile-mode)
   :bind (("C-c f" . projectile-find-file)
-	 ("C-c p" . projectile-switch-project)))
+	      ("C-c p" . projectile-switch-project)))
 
 (straight-register-package
  '(tsc :host github
@@ -390,7 +397,8 @@
 (use-package rmsbolt :straight t)
 
 ;; optionally if you want to use debugger
-(use-package treemacs :straight t)
+(use-package treemacs :straight t
+  :bind (("C-c C-o" . treemacs-select-window)))
 
 ;; optional if you want which-key integration
 (use-package which-key
@@ -471,6 +479,12 @@
               :branch "develop"
               :files (("etc/spthy-mode.el" . "spthy-mode.el"))))
 
+;; (straight-use-package
+;;  '(lean-mode :type git
+;;              :host github :repo "leanprover/lean4"
+;;              :branch "master"
+;;              :files (:defaults "lean4-mode/*.el")))
+
 (straight-use-package
  '(tla+-mode :type git
              :repo "https://git.sdf.org/bch/tlamode"
@@ -507,14 +521,26 @@
 
 (use-package meson-mode :straight t)
 
+(use-package lean-mode :straight t)
+
+(setq
+ smooth-scroll-margin 0
+ scroll-margin 1
+ scroll-conservatively 10
+ mouse-wheel-scroll-amount '(1 ((shift) . 1))
+ mouse-wheel-progressive-speed nil
+ mouse-wheel-follow-mouse 't
+ scroll-step 2)
+
 (unless (display-graphic-p)
   (defun scroll-mouse-up ()
     (interactive)
-    (scroll-up 15))
+    (scroll-up 2))
   (defun scroll-mouse-down ()
     (interactive)
-    (scroll-down 15))
+    (scroll-down 2))
   ;; activate mouse-based scrolling
   (xterm-mouse-mode 1)
+
   (global-set-key (kbd "<mouse-4>") 'scroll-mouse-down)
   (global-set-key (kbd "<mouse-5>") 'scroll-mouse-up))
