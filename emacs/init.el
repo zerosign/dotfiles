@@ -344,7 +344,10 @@
         projectile-indexing-method 'alien
 	     projectile-switch-project-action #'projectile-find-dir
         projectile-find-dir-includes-top-level t)
-  :config (projectile-mode)
+  :config
+  (projectile-mode)
+  (setq projectile-mode-line
+        '(:eval (format " Projectile[%s(%s)]" (projectile-project-name))))
   :bind (("C-c f" . projectile-find-file)
 	      ("C-c p" . projectile-switch-project)))
 
@@ -396,9 +399,18 @@
 
 (use-package rmsbolt :straight t)
 
-;; optionally if you want to use debugger
 (use-package treemacs :straight t
-  :bind (("C-c C-o" . treemacs-select-window)))
+  :config
+  (progn
+    (setq treemacs-persist-file (expand-file-name "treemacs-persist" default-snapshot-dir))
+    ;; treemacs-workspace-switch-cleanup t
+    ;;treemacs-project-follow-cleanup t)
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t))
+  :bind (("C-c C-o" . treemacs-select-window))))
+
+(use-package treemacs-projectile :straight t :after treemacs projectile)
+(use-package treemacs-magit :straight t :after treemacs magit)
 
 ;; optional if you want which-key integration
 (use-package which-key
