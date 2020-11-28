@@ -62,14 +62,22 @@
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/"))
 
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
 ;; Automatically :ensure each use-package.
 ;; (setq use-package-always-pin "melpa")
 (use-package poet-theme :straight t)
 (use-package ayu-theme :straight t)
+(use-package mood-one-theme :straight t)
+(use-package github-theme :straight t)
 
 ;; (load-theme 'poet t)
 ;; (load-theme 'ayu-light t)
-(load-theme 'leuven t)
+;; (load-theme 'leuven t)
+;; (load-theme 'mood-one t)
+
+(load-theme 'github t)
 
 ;; (straight-use-package 'deadgrep)
 (use-package deadgrep :straight t :bind (("C-c C-s"  . deadgrep)))
@@ -163,36 +171,12 @@
 
 (use-package magit-delta :straight t :defer t)
 
+(use-package elm-mode :straight t :defer t)
+
 (require 'subr-x)
 (use-package git :straight t)
 
 (straight-use-package '(org-plus-contrib :includes (org)))
-
-;; (defun org-git-version ()
-;;   "The Git version of org-mode.
-;; Inserted by installing org-mode or when a release is made."
-;;   (require 'git)
-;;   (let ((git-repo (expand-file-name
-;;                    "straight/repos/org/" user-emacs-directory)))
-;;     (string-trim
-;;      (git-run "describe"
-;;               "--match=release\*"
-;;               "--abbrev=6"
-;;               "HEAD"))))
-;;
-;; (defun org-release ()
-;;   "The release version of org-mode.
-;; Inserted by installing org-mode or when a release is made."
-;;   (require 'git)
-;;   (let ((git-repo (expand-file-name
-;;                    "straight/repos/org/" user-emacs-directory)))
-;;     (string-trim
-;;      (string-remove-prefix
-;;       "release_"
-;;       (git-run "describe"
-;;                "--match=release\*"
-;;                "--abbrev=0"
-;;                "HEAD")))))
 
 (use-package plantuml-mode :straight t
   :config
@@ -262,13 +246,21 @@
 (use-package lsp-metals :straight t)
 (use-package lsp-java :straight t)
 
+(use-package nvm :straight t)
+
+(use-package lsp-ui :straight t :commands lsp-ui-mode)
+(use-package lsp-ivy :straight t :commands lsp-ivy-workspace-symbol)
+
+(use-package dap-mode :straight t)
+
 (use-package lsp-mode
   :straight t
-  :config
-  (lsp-register-custom-settings
-   '(("gopls.completeUnimported" t t)
-     ("gopls.staticcheck" t t)
-     ("gopls.experimentalWorkspaceModule" t t)))
+  ;; :config
+  ;; (lsp-register-custom-settings
+  ;;'(;; ("gopls.completeUnimported" t t)
+     ;; ("gopls.experimentalDiagnosticsDelay" "250ms" t)
+     ;; ("gopls.experimentalPackageCacheKey" t t)
+     ;;("gopls.experimentalWorkspaceModule" t t)))
   :init
   (setq lsp-rust-server 'rust-analyzer
         read-process-output-max (* 1024 1024)
@@ -279,6 +271,7 @@
          (tuareg-mode . lsp)
          (kotlin-mode . lsp)
          (typescript-mode . lsp)
+         (js-mode . lsp)
          (rust-mode . lsp)
          (go-mode . lsp)
          (scala-mode . lsp)
@@ -286,6 +279,10 @@
   :commands lsp)
 
 (use-package lsp-ui :straight t :commands lsp-ui-mode)
+
+(use-package lsp-treemacs :straight t :commands lsp-treemacs-errors-list)
+
+
 
 ;; if you are ivy user
 (use-package lsp-ivy :straight t :commands lsp-ivy-workspace-symbol)
@@ -356,6 +353,7 @@
        :repo "ubolonton/emacs-tree-sitter"
        :files ("core/*.el")))
 
+
 (straight-use-package
  '(tree-sitter :host github
                :repo "ubolonton/emacs-tree-sitter"
@@ -390,6 +388,10 @@
 (use-package scala-mode :straight t)
 (use-package tuareg :straight t)
 
+(use-package go-playground :straight t)
+
+(use-package flycheck-golangci-lint :straight t)
+
 (use-package flycheck-mercury :straight t)
 (use-package verb :straight t)
 
@@ -402,12 +404,16 @@
 (use-package treemacs :straight t
   :config
   (progn
-    (setq treemacs-persist-file (expand-file-name "treemacs-persist" default-snapshot-dir))
-    ;; treemacs-workspace-switch-cleanup t
-    ;;treemacs-project-follow-cleanup t)
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t))
-  :bind (("C-c C-o" . treemacs-select-window))))
+    (setq
+     treemacs-persist-file (expand-file-name "treemacs-persist" default-snapshot-dir)
+     treemacs-no-png-images t
+
+     ;; treemacs-workspace-switch-cleanup t
+     ;;treemacs-project-follow-cleanup t)
+     treemacs-follow-mode t
+     treemacs-no-png-images t
+     treemacs-filewatch-mode t))
+  :bind (("C-c C-o" . treemacs-select-window)))
 
 (use-package treemacs-projectile :straight t :after treemacs projectile)
 (use-package treemacs-magit :straight t :after treemacs magit)
@@ -453,7 +459,11 @@
 (use-package ghub+ :straight t)
 (use-package github-browse-file :straight t)
 
+(use-package yaml-mode :straight t)
+
 (use-package typescript-mode :straight t)
+
+(use-package envrc :straight t)
 
 (setq wl-copy-process nil)
 
@@ -465,6 +475,7 @@
   (process-send-string wl-copy-process text)
   (process-send-eof wl-copy-process))
 
+
 ;; (defun wl-paste ()
 ;;   (if (and wl-copy-process (process-live-p wl-copy-process))
 ;;       nil
@@ -473,15 +484,17 @@
 ;; (setq interprogram-cut-function 'wl-copy)
 ;; (setq interprogram-paste-function 'wl-paste)
 
-;; (use-package gist :straight t
-;;   :config
-;;   (setq gist-list-format '((created "Created" 15 nil "%D" "%R")
-;;                            (id      "Id"      10 nil identity)
-;;                            (files   "Files"   35 nil (lambda (files) (mapconcat 'identity files ", ")))
-;;                            (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
-;;                            (description "Description" 0 nil identity))))
+(use-package gist :straight t
+  :config
+  (setq gist-list-format '((created "Created" 15 nil "%D" "%R")
+                           (id      "Id"      10 nil identity)
+                           (files   "Files"   35 nil (lambda (files) (mapconcat 'identity files ", ")))
+                           (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
+                           (description "Description" 0 nil identity))))
 
 (use-package browse-at-remote :straight t)
+
+(use-package git-link :straight t)
 
 (use-package xclip :straight t :init (xclip-mode))
 
@@ -503,6 +516,11 @@
              :branch "master"
              :files (("lisp/tla+-mode.el" . "tla+-mode.el"))))
 
+(straight-use-package
+ '(fsharp-mode :type git
+               :host github :repo "zerosign/emacs-fsharp-mode"
+               :branch "master"))
+
 (add-to-list 'auto-mode-alist '("\\.spthy" . spthy-mode))
 (add-to-list 'auto-mode-alist '("\\.tla" . tla+-mode))
 
@@ -521,11 +539,14 @@
 
 (use-package deft :straight t
   :custom
-  (deft-extensions '("org" "md" "txt"))
+  (deft-extensions '("org"))
   (deft-directory  "~/Repositories/notes/zerodevs")
   (deft-use-filename-as-title t))
 
-(use-package zetteldeft :straight t :after deft config (zettledeft-set-classic-keybindings))
+(use-package zetteldeft
+  :straight t
+  :after deft
+  :config (zetteldeft-set-classic-keybindings))
 
 (use-package julia-mode :straight t)
 
@@ -535,14 +556,39 @@
 
 (use-package lean-mode :straight t)
 
-(setq
- smooth-scroll-margin 0
- scroll-margin 1
- scroll-conservatively 10
- mouse-wheel-scroll-amount '(1 ((shift) . 1))
- mouse-wheel-progressive-speed nil
- mouse-wheel-follow-mouse 't
- scroll-step 2)
+(use-package org-roam :straight t)
+
+;; (straight-use-package
+;;  '(tsc :host github
+;;        :repo "mallt/mysql-to-org-mode"
+;;        :files ("*.el")))
+
+(use-package kubernetes :straight t)
+
+(use-package org-journal :straight t
+  :init
+  (setq org-journal-dir "~/org/journal"
+        org-journal-date-format "%A, %d %B %Y"))
+
+(defun org-journal-find-location ()
+  ;; Open today's journal, but specify a non-nil prefix argument in order to
+  ;; inhibit inserting the heading; org-capture will insert the heading.
+  (org-journal-new-entry t)
+  (unless (eq org-journal-file-type 'daily)
+    (org-narrow-to-subtree))
+  (goto-char (point-max)))
+
+(setq org-capture-templates '(("j" "Journal entry" plain (function org-journal-find-location)
+                               "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
+                               :jump-to-captured t :immediate-finish t)))
+
+(setq smooth-scroll-margin 0
+      scroll-margin 1
+      scroll-conservatively 10
+      mouse-wheel-scroll-amount '(1 ((shift) . 1))
+      mouse-wheel-progressive-speed nil
+      mouse-wheel-follow-mouse 't
+      scroll-step 2)
 
 (unless (display-graphic-p)
   (defun scroll-mouse-up ()
