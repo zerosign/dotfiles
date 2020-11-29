@@ -395,7 +395,14 @@
 (use-package flycheck-mercury :straight t)
 (use-package verb :straight t)
 
-(use-package racket-mode :straight t)
+(use-package racket-mode :straight t
+  :config
+  (setq racket-user-command-line-arguments '("-I" "typed/racket")))
+
+;; (use-package ob-racket :straight t
+;;   :after org
+;;   :config
+;;   (append '((racket . t) (scribble . t)) org-babel-load-languages))
 
 (use-package crystal-mode :straight t)
 
