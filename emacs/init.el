@@ -82,6 +82,8 @@
 ;; (straight-use-package 'deadgrep)
 (use-package deadgrep :straight t :bind (("C-c C-s"  . deadgrep)))
 
+(use-package projectile-ripgrep :straight t)
+
 ;; (straight-use-package 'company)
 (use-package company
   :straight t
@@ -128,6 +130,10 @@
 
 (use-package counsel :straight t :demand t
   :bind (("M-x" . counsel-M-x)))
+
+;; (use-package systemd-mode :straight t)
+
+(use-package systemd :straight t)
 
 (use-package ivy :straight t :demand t :diminish ivy-mode
   :init
@@ -226,6 +232,8 @@
 ;;   :bind (("C-c l" . org-store-link)
 ;;          ("C-c a" . org-agenda)))
 
+(use-package php-mode :straight t)
+
 (use-package org-projectile
   :straight t
   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
@@ -255,12 +263,15 @@
 
 (use-package lsp-mode
   :straight t
-  ;; :config
-  ;; (lsp-register-custom-settings
-  ;;'(;; ("gopls.completeUnimported" t t)
-     ;; ("gopls.experimentalDiagnosticsDelay" "250ms" t)
-     ;; ("gopls.experimentalPackageCacheKey" t t)
-     ;;("gopls.experimentalWorkspaceModule" t t)))
+  :config
+  (lsp-register-custom-settings
+   '(("rust-analyzer.procMacro.enable" t t)
+     ("rust-analyzer.cargo.loadOutDirsFromCheck" t t)
+     ("gopls.completeUnimported" t t)
+     ("gopls.staticcheck" t t)
+     ("gopls.experimentalDiagnosticsDelay" "250ms" t)
+     ("gopls.experimentalPackageCacheKey" t t)
+     ("gopls.experimentalWorkspaceModule" t t)))
   :init
   (setq lsp-rust-server 'rust-analyzer
         read-process-output-max (* 1024 1024)
@@ -270,6 +281,7 @@
   :hook ((crystal-mode . lsp)
          (tuareg-mode . lsp)
          (kotlin-mode . lsp)
+         (prolog-mode . lsp)
          (typescript-mode . lsp)
          (js-mode . lsp)
          (rust-mode . lsp)
@@ -394,6 +406,10 @@
 
 (use-package flycheck-mercury :straight t)
 (use-package verb :straight t)
+(use-package restclient :straight t)
+;; (use-package restclient-jq :straight t)
+
+(use-package walkman :straight t)
 
 (use-package racket-mode :straight t
   :config
@@ -414,7 +430,7 @@
     (setq
      treemacs-persist-file (expand-file-name "treemacs-persist" default-snapshot-dir)
      treemacs-no-png-images t
-
+     treemacs--width-is-locked nil
      ;; treemacs-workspace-switch-cleanup t
      ;;treemacs-project-follow-cleanup t)
      treemacs-follow-mode t
@@ -461,9 +477,9 @@
 (use-package emacsql-mysql :straight t)
 (use-package pcap-mode :straight t)
 
-(use-package magithub :straight t)
-(use-package ghub :straight t)
-(use-package ghub+ :straight t)
+;; (use-package magithub :straight t)
+;; (use-package ghub :straight t)
+;; (use-package ghub+ :straight t)
 (use-package github-browse-file :straight t)
 
 (use-package yaml-mode :straight t)
@@ -491,13 +507,13 @@
 ;; (setq interprogram-cut-function 'wl-copy)
 ;; (setq interprogram-paste-function 'wl-paste)
 
-(use-package gist :straight t
-  :config
-  (setq gist-list-format '((created "Created" 15 nil "%D" "%R")
-                           (id      "Id"      10 nil identity)
-                           (files   "Files"   35 nil (lambda (files) (mapconcat 'identity files ", ")))
-                           (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
-                           (description "Description" 0 nil identity))))
+;; (use-package gist :straight t
+;;   :config
+;;   (setq gist-list-format '((created "Created" 15 nil "%D" "%R")
+;;                            (id      "Id"      10 nil identity)
+;;                            (files   "Files"   35 nil (lambda (files) (mapconcat 'identity files ", ")))
+;;                            (visibility "Private" 8 nil (lambda (public) (or (and public "") "   Y")))
+;;                            (description "Description" 0 nil identity))))
 
 (use-package browse-at-remote :straight t)
 
