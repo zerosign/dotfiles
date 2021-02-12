@@ -1,3 +1,4 @@
+
 (add-to-list 'term-file-aliases '("alacritty" . "xterm"))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -6,7 +7,8 @@
 
 (setq straight-recipes-gnu-elpa-use-mirror    t
       straight-repository-branch              "develop"
-      straight-enable-use-package-integration t)
+      straight-enable-use-package-integration t
+      warning-minimum-level :error)
 
 (defvar bootstrap-version)
 
@@ -74,15 +76,28 @@
 
 ;; (load-theme 'poet t)
 ;; (load-theme 'ayu-light t)
+(load-theme 'poet-dark-monochrome t)
 ;; (load-theme 'leuven t)
 ;; (load-theme 'mood-one t)
-
-(load-theme 'github t)
+;; (load-theme 'modus-vivendi t)
+;; (load-theme 'adwaita t)
 
 ;; (straight-use-package 'deadgrep)
 (use-package deadgrep :straight t :bind (("C-c C-s"  . deadgrep)))
 
+(use-package annotate :straight t)
+
 (use-package projectile-ripgrep :straight t)
+
+(use-package package-utils-upgrade-all-and-recompile
+  :commands (package-utils-upgrade-all-and-recompile)
+
+  :straight
+  (package-utils-upgrade-all-and-recompile
+    :type git
+    :host gitlab
+    :repo "ideasman42/emacs-package-utils-upgrade-all-and-recompile"))
+
 
 ;; (straight-use-package 'company)
 (use-package company
@@ -192,6 +207,10 @@
 (use-package flycheck-plantuml :straight t
   :hook (plantuml . flycheck))
 
+(use-package rvm :straight t
+  :init
+  (rvm-use-default))
+
 ;; (use-package org-plus-contrib :straight t
 ;;   :mode (("\\.org$" . org-mode))
 ;;   :init
@@ -255,14 +274,15 @@
 (use-package lsp-java :straight t)
 
 (use-package nvm :straight t)
-
-(use-package lsp-ui :straight t :commands lsp-ui-mode)
 (use-package lsp-ivy :straight t :commands lsp-ivy-workspace-symbol)
-
-(use-package dap-mode :straight t)
+(use-package dap-mode :straight t
+  :config
+  (setq dap-auto-configure-features '(sessions locals controls tooltip)))
 
 (use-package lsp-mode
   :straight t
+  :custom
+  (lsp-rust-server 'rust-analyzer)
   :config
   (lsp-register-custom-settings
    '(("rust-analyzer.procMacro.enable" t t)
@@ -276,8 +296,13 @@
   (setq lsp-rust-server 'rust-analyzer
         read-process-output-max (* 1024 1024)
         lsp-idle-delay 0.500
+        lsp-completion-provider :capf
+        lsp-lens-enable nil
+        lsp-ui-sideline-enable nil
+        lsp-ui-sideline-show-hover nil
         lsp-enable-file-watchers nil
-        gc-cons-threshold 100000000)
+        lsp-log-io nil
+        gc-cons-threshold 200000000)
   :hook ((crystal-mode . lsp)
          (tuareg-mode . lsp)
          (kotlin-mode . lsp)
@@ -285,47 +310,13 @@
          (typescript-mode . lsp)
          (js-mode . lsp)
          (rust-mode . lsp)
+         (haskell-mode . lsp)
          (go-mode . lsp)
          (scala-mode . lsp)
          (lsp-mode . lsp-enable-which-key-integration))
   :commands lsp)
 
-(use-package lsp-ui :straight t :commands lsp-ui-mode)
-
 (use-package lsp-treemacs :straight t :commands lsp-treemacs-errors-list)
-
-
-
-;; if you are ivy user
-(use-package lsp-ivy :straight t :commands lsp-ivy-workspace-symbol)
-;; ;; (org-babel-do-load-languages
-;; ;;  'org-babel-load-languages
-;; ;;  '((clojure . t)
-;; ;;    (emacs-lisp . t)
-;; ;;    (gnuplot . t)
-;; ;;    (java . t)
-;; ;;    (clojure . t)
-;; ;;    (dot . t)
-;; ;;    (C . t)
-;; ;;    (lilypond . t)
-;; ;;    (ruby . t)
-;; ;;    ;; (rust . t)
-;; ;;    ;; (rustic . t)
-;; ;;    (python . t)
-;; ;;    (dot . t)
-;; ;;    (screen . t)
-;; ;;    (fortran . t)
-;; ;;    ;; (prolog . t)
-;; ;;    ;; (kotlin . t)
-;; ;;    (http . t)
-;; ;;    ;; (R . t)
-;; ;;    (ditaa . t)
-;; ;;    (js . t)
-;; ;;    (ammonite . t)
-;; ;;    (shell . t)
-;; ;;    (sql . t)
-;; ;;    (plantuml . t)
-;; ;;    (ocaml . t)))
 
 (use-package polymode :straight t)
 (use-package poly-markdown :straight t)
@@ -347,12 +338,16 @@
 (use-package projectile :straight t :diminish projectile-mode
   :init
   (setq projectile-enable-caching t
+        projectile-require-project-root t
 	     projectile-cache-file (expand-file-name "projectile.cache" default-snapshot-dir)
 	     projectile-known-projects-file (expand-file-name "projectile-bookmarks.eld" default-snapshot-dir)
 	     projectile-completion-system 'ivy
         projectile-indexing-method 'alien
-	     projectile-switch-project-action #'projectile-find-dir
-        projectile-find-dir-includes-top-level t)
+        projectile-project-root-files-functions '(projectile-root-local
+                                                  projectile-root-top-down
+                                                  projectile-root-top-down-recurring
+                                                  projectile-root-bottom-up)
+	     projectile-switch-project-action #'projectile-find-dir)
   :config
   (projectile-mode)
   (setq projectile-mode-line
@@ -364,7 +359,6 @@
  '(tsc :host github
        :repo "ubolonton/emacs-tree-sitter"
        :files ("core/*.el")))
-
 
 (straight-use-package
  '(tree-sitter :host github
@@ -392,20 +386,40 @@
   (add-hook 'before-save-hook #'lsp-format-buffer t t)
   (add-hook 'before-save-hook #'lsp-organize-imports t t))
 
-(use-package go-mode :straight t)
+(use-package go-mode :straight t
+  :config
+  (require 'dap-go)
+  (dap-go-setup))
 
 (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 
-(use-package rust-mode :straight t)
+(use-package rust-mode :straight t
+  :config
+  (setq lsp-rust-server 'rust-analyzer))
+
+(use-package haskell-mode :straight t)
+
+(use-package lsp-haskell :straight t)
+
 (use-package scala-mode :straight t)
+
+(use-package ammonite-term-repl :straight t
+  :hook (scala-mode . ammonite-term-repl-minor))
+
 (use-package tuareg :straight t)
 
 (use-package go-playground :straight t)
 
 (use-package flycheck-golangci-lint :straight t)
 
+(use-package terraform-mode :straight t)
+
 (use-package flycheck-mercury :straight t)
-(use-package verb :straight t)
+
+(use-package verb :straight t
+  :mode "\\.verb\\'"
+  :hook (verb . org))
+
 (use-package restclient :straight t)
 ;; (use-package restclient-jq :straight t)
 
@@ -447,6 +461,10 @@
   :config
   (which-key-mode))
 
+(use-package flycheck-inline :straight t
+  :init
+  (add-hook 'flycheck-mode-hook #'turn-on-flycheck-inline))
+
 (use-package flycheck :straight t
   :config (global-flycheck-mode))
 
@@ -487,6 +505,15 @@
 (use-package typescript-mode :straight t)
 
 (use-package envrc :straight t)
+
+(use-package elfeed :straight t)
+(use-package elfeed-protocol :straight t)
+
+(use-package elfeed-org :straight t
+  :init
+  (setq rmh-elfeed-org-files (list "~/.emacs.d/research-papers.org")))
+
+(use-package elfeed-dashboard :straight t)
 
 (setq wl-copy-process nil)
 
@@ -558,7 +585,8 @@
    jdecomp-decompiler-type 'fernflower))
 
 
-(use-package editorconfig :straight t :config (editorconfig-mode 1))
+(use-package editorconfig :straight t  :config (editorconfig-mode 1))
+(add-hook 'prog-mode-hook #'editorconfig-mode-apply)
 
 (use-package deft :straight t
   :custom
@@ -605,23 +633,28 @@
                                "** %(format-time-string org-journal-time-format)%^{Title}\n%i%?"
                                :jump-to-captured t :immediate-finish t)))
 
-(setq smooth-scroll-margin 0
-      scroll-margin 1
-      scroll-conservatively 10
-      mouse-wheel-scroll-amount '(1 ((shift) . 1))
-      mouse-wheel-progressive-speed nil
-      mouse-wheel-follow-mouse 't
-      scroll-step 2)
+;; (setq smooth-scroll-margin 0
+;;       scroll-margin 1
+;;       scroll-conservatively 10
+;;       mouse-wheel-scroll-amount '(1 ((shift) . 1))
+;;       mouse-wheel-progressive-speed nil
+;;       mouse-wheel-follow-mouse 't
+;;       scroll-step 2)
 
-(unless (display-graphic-p)
-  (defun scroll-mouse-up ()
-    (interactive)
-    (scroll-up 2))
-  (defun scroll-mouse-down ()
-    (interactive)
-    (scroll-down 2))
-  ;; activate mouse-based scrolling
-  (xterm-mouse-mode 1)
+;; (unless (display-graphic-p)
+;;   (defun scroll-mouse-up ()
+;;     (interactive)
+;;     (scroll-up 2))
+;;   (defun scroll-mouse-down ()
+;;     (interactive)
+;;     (scroll-down 2))
+;;   ;; activate mouse-based scrolling
+;;   (xterm-mouse-mode 1)
 
-  (global-set-key (kbd "<mouse-4>") 'scroll-mouse-down)
-  (global-set-key (kbd "<mouse-5>") 'scroll-mouse-up))
+;;   (global-set-key (kbd "<mouse-4>") 'scroll-mouse-down)
+;;   (global-set-key (kbd "<mouse-5>") 'scroll-mouse-up))
+
+;; (use-package vterm :straight t)
+
+(setq ad-redefinition-action 'accept)
+(put 'magit-clean 'disabled nil)
